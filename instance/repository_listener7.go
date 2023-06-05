@@ -129,7 +129,7 @@ func (repo *InstanceListener7Repository) ListByFilters(filters map[string]interf
 
 	var nextToken int64 = 1
 
-	var maxResults int64 = 10
+	var maxResults int64 = 300
 
 	level.Info(repo.logger).Log("msg", "LISTENER7 资源开始加载")
 

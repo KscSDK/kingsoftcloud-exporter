@@ -96,7 +96,7 @@ func (repo *InstanceDCGWRepository) ListByFilters(filters map[string]interface{}
 
 	var nextToken int64 = 1
 
-	var maxResults int64 = 10
+	var maxResults int64 = 300
 
 	level.Info(repo.logger).Log("msg", "DCGW 资源开始加载")
 

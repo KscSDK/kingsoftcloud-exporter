@@ -2,12 +2,33 @@ package instance
 
 import "fmt"
 
-type InstanceEPCMeta struct {
-	AvailabilityZone string `json:"AvailabilityZone"`
-	HostName         string `json:"HostName"`
-	InstanceId       string `json:"InstanceId"`
-	InstanceName     string `json:"InstanceName"`
+//安全组信息
+type NetworkInterfaceAttribute struct {
+	//网卡的类型，主网卡(primary)、从网卡(extension)
+	NetworkInterfaceType string `json:"NetworkInterfaceType"`
+
+	//服务器的网卡在VPC中的IP
 	PrivateIpAddress string `json:"PrivateIpAddress"`
+}
+
+type InstanceEPCMeta struct {
+	//可用区的名称
+	AvailabilityZone string `json:"AvailabilityZone"`
+
+	//裸金属服务器资源ID
+	HostId string `json:"HostId"`
+
+	//裸金属服务器名称
+	HostName string `json:"HostName"`
+
+	//裸金属服务器机型
+	HostType string `json:"HostType"`
+
+	//关联的网卡信息
+	NetworkInterfaceAttributeSet []*NetworkInterfaceAttribute `json:"NetworkInterfaceAttributeSet"`
+
+	//创建时间
+	CreateTime string `json:"CreateTime"`
 }
 
 //InstanceEPC
@@ -23,12 +44,15 @@ func (i *InstanceEPC) GetMeta() interface{} {
 
 //GetInstanceID
 func (i *InstanceEPC) GetInstanceName() string {
-	return i.meta.InstanceName
+	return i.meta.HostName
 }
 
 //GetInstanceIP
 func (i *InstanceEPC) GetInstanceIP() string {
-	return i.meta.PrivateIpAddress
+	if len(i.meta.NetworkInterfaceAttributeSet) <= 0 {
+		return "EPC"
+	}
+	return i.meta.NetworkInterfaceAttributeSet[0].PrivateIpAddress
 }
 
 //GetFieldValueByName

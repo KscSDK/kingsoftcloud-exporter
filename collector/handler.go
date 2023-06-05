@@ -19,18 +19,6 @@ type ProductHandler interface {
 	// 获取云监控指标namespace
 	GetNamespace() string
 
-	// 对指标元数据做检验, true=可用, false=跳过
-	// IsMetricMetaValid(meta *metric.Meta) bool
-
-	// 修改指标元数据
-	// ModifyMetricMeta(meta *metric.Meta) error
-
-	// 对指标做校验, true=可用, false=跳过
-	// IsMetricValid(m *metric.Metric) bool
-
-	// 修改指标
-	// ModifyMetric(m *metric.Metric) error
-
 	GetInstances() ([]instance.KscInstance, error)
 
 	// 获取该指标下符合条件的所有实例, 并生成所有的series

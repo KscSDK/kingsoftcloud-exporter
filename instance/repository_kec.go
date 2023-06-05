@@ -100,7 +100,7 @@ func (repo *InstanceKECRepository) ListByFilters(filters map[string]interface{})
 
 	var marker int64 = 0
 
-	var maxResults int64 = 100
+	var maxResults int64 = 300
 
 	var totalCount int64 = -1
 

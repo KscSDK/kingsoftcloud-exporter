@@ -33,6 +33,7 @@ var (
 
 	Product2Namespace = map[string]string{
 		"kec":       "KEC",
+		"epc":       "EPC",
 		"eip":       "EIP",
 		"nat":       "NAT",
 		"slb":       "SLB",
@@ -54,10 +55,12 @@ var (
 	//支持多维标签的监控项云服务产品
 	SupportMultiDimensionNamespaces = map[string]bool{
 		"KEC": true,
+		"EPC": true,
 	}
 
 	AllProductMetricsConfig = map[string][]KscMetricConfig{
 		"KEC":       AllKECMetricConfigs,
+		"EPC":       AllEPCMetricConfigs,
 		"EIP":       AllEIPMetricConfigs,
 		"NAT":       AllNATMetricConfigs,
 		"SLB":       AllSLBMetricConfigs,
