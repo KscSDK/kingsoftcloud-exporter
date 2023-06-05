@@ -1,6 +1,9 @@
 package instance
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
@@ -34,7 +37,7 @@ func (repo *InstanceBWSRepository) ListByIds(id []string) (instances []KscInstan
 	return
 }
 
-func (repo *InstanceBWSRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceBWSRepository) ListByMonitors(filters map[string]interface{}) (instances []KscInstance, err error) {
 	var marker int64 = 1
 
 	var maxResults int64 = 300
@@ -57,8 +60,7 @@ getMoreInstances:
 
 	for _, v := range l {
 		meta := &InstanceBWSMeta{
-			InstanceId:       v.InstanceID,
-			PrivateIpAddress: v.InstanceIP,
+			BandWidthShareId: v.InstanceID,
 		}
 		ins := &InstanceBWS{
 			InstanceBase: InstanceBase{
@@ -83,8 +85,43 @@ getMoreInstances:
 	return
 }
 
-func (repo *InstanceBWSRepository) ListByMonitors(filters map[string]interface{}) (instances []KscInstance, err error) {
-	return nil, nil
+type DescribeBandWidthSharesResponse struct {
+	BandWidthShareSet []*InstanceBWSMeta `json:"BandWidthShareSet"`
+	RequestId         string             `json:"RequestId"`
+}
+
+func (repo *InstanceBWSRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+
+	level.Info(repo.logger).Log("msg", "BWS 资源开始加载")
+
+	resp, err := repo.client.DescribeBandWidthShares(&filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp == nil {
+		return nil, fmt.Errorf("get no bws instances.")
+	}
+
+	respBytes, _ := json.Marshal(resp)
+
+	var response DescribeBandWidthSharesResponse
+	if err := json.Unmarshal(respBytes, &response); err != nil {
+		return nil, fmt.Errorf("parse bws instance list err, %+v", err)
+	}
+
+	for _, v := range response.BandWidthShareSet {
+		instance, err := NewInstanceBWS(v.BandWidthShareId, v)
+		if err != nil {
+			level.Error(repo.logger).Log("msg", "Create bws instance fail", "id", v.BandWidthShareId)
+			continue
+		}
+		instances = append(instances, instance)
+	}
+
+	level.Info(repo.logger).Log("msg", "BWS 资源加载完毕", "instance_num", len(instances))
+
+	return
 }
 
 //NewInstanceBWSRepository

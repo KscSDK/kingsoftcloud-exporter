@@ -3,11 +3,14 @@ package instance
 import "fmt"
 
 type InstanceBWSMeta struct {
-	AvailabilityZone string `json:"AvailabilityZone"`
-	HostName         string `json:"HostName"`
-	InstanceId       string `json:"InstanceId"`
-	InstanceName     string `json:"InstanceName"`
-	PrivateIpAddress string `json:"PrivateIpAddress"`
+	//共享带宽的ID
+	BandWidthShareId string `json:"BandWidthShareId"`
+
+	//共享带宽的名称
+	BandWidthShareName string `json:"BandWidthShareName"`
+
+	//共享带宽创建时间
+	CreateTime string `json:"CreateTime"`
 }
 
 //InstanceBWS
@@ -23,12 +26,12 @@ func (i *InstanceBWS) GetMeta() interface{} {
 
 //GetInstanceID
 func (i *InstanceBWS) GetInstanceName() string {
-	return i.meta.InstanceName
+	return i.meta.BandWidthShareName
 }
 
 //GetInstanceIP
 func (i *InstanceBWS) GetInstanceIP() string {
-	return i.meta.PrivateIpAddress
+	return `BWS`
 }
 
 //GetFieldValueByName
