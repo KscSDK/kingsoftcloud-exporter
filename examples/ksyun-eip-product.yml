@@ -1,0 +1,16 @@
+rate_limit: 15
+
+credential:
+  access_key: "<ak>"
+  secret_key: "<sk>"
+  region: "cn-beijing-6"
+
+# 整个产品纬度配置, 每个产品一个item
+product_conf:
+  - namespace: EIP # 必须, 产品命名空间
+    # only_include_metrics: # 可选，只导出指标列表
+    #   - eip.bps.in
+    reload_interval_minutes: 5 # 可选，周期reload实例列表, 建议频率不要太频繁
+    period_seconds: 60 # 可选, 指标统计周期
+    range_seconds: 300 # 可选, 选取时间范围, 开始时间=now-range_seconds, 结束时间=now
+    delay_seconds: 60 # 可选, 时间偏移量, 结束时间=now-delay_seconds

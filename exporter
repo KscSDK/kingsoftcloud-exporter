@@ -1,0 +1,71 @@
+exporter_mode: "MOCK"
+
+rate_limit: 15
+
+credential:
+  access_key: "AKLTEsT9GHOTNCQAhdOHgAmrQ"
+  secret_key: "ONxXTbI1YuRAEZPYejb7p3aASJl3QGTl2dJSMSfkJk4dopRxFR740mpXicc6BrpKQ"
+  region: "cn-beijing-6"
+  mock_inner_account: "73401193"
+  mock_inner_url: "http://monitor.console.sdns.ksyun.com/?Action=DescribeMonitorInstances&Version=2021-01-01"
+  # region: "cn-shanghai-2"
+
+# 整个产品纬度配置, 每个产品一个item
+product_conf:
+  - namespace: KEC
+    reload_interval_minutes: 2
+    period_seconds: 60
+    range_seconds: 300
+    delay_seconds: 60
+  # - namespace: EIP # 必须, 产品命名空间
+  #   # only_include_metrics: # 可选，只导出指标列表
+  #   #   - eip.bps.in
+  #   reload_interval_minutes: 5 # 可选，周期reload实例列表, 建议频率不要太频繁
+  #   period_seconds: 60 # 可选, 指标统计周期
+  #   range_seconds: 300 # 可选, 选取时间范围, 开始时间=now-range_seconds, 结束时间=now
+  #   delay_seconds: 60 # 可选, 时间偏移量, 结束时间=now-delay_seconds
+  # - namespace: NAT
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: SLB
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: DCGW
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: BWS
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: PEER
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: LISTENER
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: LISTENER7
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: KCS
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  # - namespace: KRDS
+  #   reload_interval_minutes: 5
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
