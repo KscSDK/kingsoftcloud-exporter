@@ -258,13 +258,8 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 		return nil, err
 	}
 
-	// fmt.Println("=================")
-	// fmt.Println(string(respBytes))
-	// fmt.Println("=================")
-
 	metricSamplesList := make(map[string][]*Samples)
 	for _, points := range rep.Result {
-		// fmt.Println(points.Label, points.InstanceId, points.Data)
 		id := fmt.Sprintf("%s.%s", points.Label, points.InstanceId)
 		if _, isExist := ms[id]; isExist {
 			samples, ql, e := repo.buildSamples(ms[id], points)
@@ -339,8 +334,7 @@ func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 	st, et int64,
 ) map[string]interface{} {
 	requestParams := make(map[string]interface{})
-	st -= 60
-	et -= 60
+
 	requestParams["StartTime"] = time.Unix(st, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["EndTime"] = time.Unix(et, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["Period"] = 60

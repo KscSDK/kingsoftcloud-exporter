@@ -77,8 +77,6 @@ getMoreHTTPInstances:
 
 	level.Info(repo.logger).Log("msg", "HTTP 资源加载完毕")
 
-	fmt.Println("HTTP", len(instances))
-
 	marker = 1
 
 	maxResults = 300
@@ -97,8 +95,6 @@ getMoreHTTPSInstances:
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("HTTPS", len(instancesHTTPS))
 
 	for _, v := range instancesHTTPS {
 		meta := &InstanceListenerMeta{
@@ -126,7 +122,6 @@ getMoreHTTPSInstances:
 
 	level.Info(repo.logger).Log("msg", "HTTPS 资源加载完毕")
 
-	fmt.Println("HTTP+HTTPS", len(instances))
 	return
 }
 

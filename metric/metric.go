@@ -179,16 +179,10 @@ func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, log
 	st := now - int64(120)
 	et := now - int64(60)
 
-	// for _, v := range metrics {
-	// 	fmt.Println(v.Id, v.Meta.MetricName)
-	// }
-
 	metricSamples, err := repo.ListBatchSamples(metrics, st, et)
 	if err != nil {
 		return nil, err
 	}
-
-	// fmt.Println(len(metricSamples))
 
 	for metricID, samplesList := range metricSamples {
 		m, isExist := metrics[metricID]

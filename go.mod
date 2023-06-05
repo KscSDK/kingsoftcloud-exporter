@@ -1,19 +1,20 @@
 module github.com/KscSDK/kingsoftcloud-exporter
 
-go 1.19
+go 1.18
 
 require (
+	github.com/KscSDK/ksc-sdk-go v0.1.48
 	github.com/alecthomas/kingpin/v2 v2.3.2
 	github.com/go-kit/log v0.2.1
+	github.com/google/uuid v1.3.0
 	github.com/prometheus/client_golang v1.15.1
-	github.com/prometheus/common v0.43.0
+	github.com/prometheus/client_model v0.4.0
+	github.com/prometheus/common v0.44.0
+	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/google/uuid v1.3.0 // indirect
-
 require (
-	github.com/KscSDK/ksc-sdk-go v0.1.47
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/aws/aws-sdk-go v1.25.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -23,10 +24,8 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
-	github.com/prometheus/client_model v0.4.0
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/time v0.3.0
+	golang.org/x/sys v0.8.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 )
