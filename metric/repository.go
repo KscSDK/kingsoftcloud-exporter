@@ -30,11 +30,10 @@ type MetricRepository interface {
 	// 获取指标的元数据
 	GetMeta(conf config.KscMetricConfig, instanceId string) (*Meta, error)
 
-	// // 按时间范围获取单个时间线的数据点
-	// GetSamples(series *Series, startTime int64, endTime int64) (samples *Samples, err error)
+	// 按时间范围批量获取数据点
 	ListBatchSamples(metric map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error)
 
-	// // 按时间范围获取单个指标下所有时间线的数据点
+	// 按时间范围获取单个指标下所有时间线的数据点
 	ListSamples(metric *Metric, startTime int64, endTime int64) (samplesList []*Samples, err error)
 }
 

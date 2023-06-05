@@ -42,7 +42,7 @@ func (c *KscProductCollector) GetMetrics() error {
 func (c *KscProductCollector) Collect(ch chan<- prometheus.Metric) (err error) {
 	wg := sync.WaitGroup{}
 
-	queriesGroup := c.Queries.SplitByBatch(2000)
+	queriesGroup := c.Queries.SplitByBatch(config.DefaultQueryMetricBatchSize)
 
 	wg.Add(len(queriesGroup))
 
@@ -50,7 +50,6 @@ func (c *KscProductCollector) Collect(ch chan<- prometheus.Metric) (err error) {
 		go func(q []*metric.Query) {
 			defer wg.Done()
 			pms, err0 := metric.GetPromMetricsByQueries(q, c.logger)
-			// pmsMap, err0 := metric.GetPromMetricsByQueriesV2(q, c.logger)
 			if err0 != nil {
 				level.Error(c.logger).Log(
 					"msg", "Get samples fail",
@@ -58,11 +57,9 @@ func (c *KscProductCollector) Collect(ch chan<- prometheus.Metric) (err error) {
 				)
 				err = err0
 			} else {
-				// for _, pms := range pmsMap {
 				for _, pm := range pms {
 					ch <- pm
 				}
-				// }
 			}
 		}(queries)
 	}
