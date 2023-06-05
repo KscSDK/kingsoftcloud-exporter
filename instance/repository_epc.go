@@ -32,12 +32,20 @@ func (repo *InstanceEPCRepository) ListByIds(id []string) (instances []KscInstan
 	return
 }
 
-func (repo *InstanceEPCRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceEPCRepository) ListByMonitors(filters map[string]interface{}) (instances []KscInstance, err error) {
 	return nil, nil
 }
 
-func (repo *InstanceEPCRepository) ListByMonitors(filters map[string]interface{}) (instances []KscInstance, err error) {
-	return nil, nil
+type DescribeEPCsResponse struct {
+	HostSet    []InstanceEPCMeta `json:"HostSet"`
+	NextToken  int64             `json:"NextToken"`
+	TotalCount int64             `json:"TotalCount"`
+	RequestId  string            `json:"RequestId"`
+}
+
+func (repo *InstanceEPCRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+
+	return
 }
 
 //NewInstanceEPCRepository

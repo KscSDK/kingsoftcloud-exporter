@@ -2,7 +2,7 @@ package instance
 
 import "fmt"
 
-type InstancesEPCMeta struct {
+type InstanceEPCMeta struct {
 	AvailabilityZone string `json:"AvailabilityZone"`
 	HostName         string `json:"HostName"`
 	InstanceId       string `json:"InstanceId"`
@@ -13,7 +13,7 @@ type InstancesEPCMeta struct {
 //InstanceEPC
 type InstanceEPC struct {
 	InstanceBase
-	meta *InstancesEPCMeta
+	meta *InstanceEPCMeta
 }
 
 //GetMeta
@@ -42,7 +42,7 @@ func (i *InstanceEPC) GetFieldValuesByName(string) (map[string][]string, error) 
 }
 
 //NewInstanceEPC
-func NewInstanceEPC(instanceId string, meta *InstancesEPCMeta) (*InstanceEPC, error) {
+func NewInstanceEPC(instanceId string, meta *InstanceEPCMeta) (*InstanceEPC, error) {
 	if instanceId == "" {
 		return nil, fmt.Errorf("instanceId is empty ")
 	}
