@@ -44,6 +44,7 @@ var (
 		"krds":      "KRDS",
 		"kcs":       "KCS",
 		"dcgw":      "DCGW",
+		"ks3":       "KS3",
 	}
 
 	SupportStatisticsTypes = map[string]bool{
@@ -72,6 +73,7 @@ var (
 		"KCS":       AllKCSMetricConfigs,
 		"PGS":       AllPGSMetricConfigs,
 		"DCGW":      AllDCGWMetricConfigs,
+		"KS3":       AllKS3MetricConfigs,
 	}
 )
 

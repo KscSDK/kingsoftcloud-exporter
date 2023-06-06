@@ -272,6 +272,7 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 			metricSamplesList[id] = append(metricSamplesList[id], samples)
 		}
 	}
+
 	return metricSamplesList, nil
 }
 
@@ -290,7 +291,6 @@ func (repo *MetricRepositoryImpl) getMetricStatistics(
 	if err != nil {
 		return nil, err
 	}
-
 	requestParams := repo.buildGetMonitorDataRequest(m, seriesList, st, et)
 
 	start := time.Now()
@@ -320,6 +320,7 @@ func (repo *MetricRepositoryImpl) getMetricStatistics(
 		}
 		samplesList = append(samplesList, samples)
 	}
+
 	return samplesList, nil
 }
 

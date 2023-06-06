@@ -9,6 +9,7 @@ import (
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
 	"github.com/KscSDK/kingsoftcloud-exporter/constant"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/kingsoftcloud-exporter/instance"
 	"github.com/KscSDK/kingsoftcloud-exporter/metric"
 	"github.com/KscSDK/kingsoftcloud-exporter/util"
@@ -82,6 +83,9 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 		c.MetricMap = make(map[string]*metric.Metric)
 	}
 
+	if err := iam.ReloadIAMProjects(c.Conf, c.logger); err != nil {
+		//TODO:
+	}
 	//提前先加载资源
 	instances, err := c.handler.GetInstances()
 	if err != nil {
