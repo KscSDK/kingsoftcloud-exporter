@@ -10,6 +10,7 @@ import (
 	"github.com/KscSDK/kingsoftcloud-exporter/util"
 
 	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -107,6 +108,11 @@ func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, log
 					if err != nil {
 						return nil, err
 					}
+				}
+
+				if _, isExists := config.DebugNamespaceMetrics[metricID]; isExists {
+					ts := time.Unix(point.Timestamp, 0)
+					level.Error(logger).Log("metric", metricID, "timestamp", ts.Format("2006-01-02 03:04:05"), "value", point.Value)
 				}
 
 				var names []string

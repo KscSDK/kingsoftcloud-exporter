@@ -338,7 +338,7 @@ func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 	requestParams["StartTime"] = time.Unix(st, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["EndTime"] = time.Unix(et, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["Period"] = 60
-	requestParams["Aggregate"] = []string{"Avg"}
+	requestParams["Aggregate"] = []string{"Max"}
 
 	requestMetrics := make([]*RequestMonitorMetric, 0, len(ms))
 
@@ -377,7 +377,7 @@ func (repo *MetricRepositoryImpl) buildGetMonitorDataRequest(
 	requestParams["StartTime"] = time.Unix(st, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["EndTime"] = time.Unix(et, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["Period"] = 60
-	requestParams["Aggregate"] = []string{"Avg"}
+	requestParams["Aggregate"] = []string{"Max"}
 
 	requestMetrics := make([]*RequestMonitorMetric, 0, len(seriesList))
 	for _, series := range seriesList {

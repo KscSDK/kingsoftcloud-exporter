@@ -29,7 +29,10 @@ const (
 
 var (
 	ExporterRunningRegion = ""
-	ExporterRunningMode   = ""
+
+	ExporterRunningMode = ""
+
+	DebugNamespaceMetrics = map[string]bool{}
 
 	Product2Namespace = map[string]string{
 		"kec":       "KEC",
@@ -125,6 +128,7 @@ type KscProductConfig struct {
 	MetricNameType        int32                  `yaml:"metric_name_type"` // 1=大写转下划线, 2=全小写
 	ReloadIntervalMinutes int64                  `yaml:"reload_interval_minutes"`
 	Metrics               []KscMetricConfig      `yaml:"metrics"`
+	DebugMetrics          []string               `yaml:"debug_metrics"` //打印监控项
 }
 
 func (p *KscProductConfig) IsReloadEnable() bool {
@@ -188,6 +192,12 @@ func (c *KscExporterConfig) fillDefault() {
 
 			if metric.RangeSeconds == 0 {
 				metric.RangeSeconds = metric.PeriodSeconds
+			}
+
+			if len(c.Products[i].DebugMetrics) > 0 {
+				for _, debugMetric := range c.Products[i].DebugMetrics {
+					DebugNamespaceMetrics[debugMetric] = true
+				}
 			}
 		}
 	}

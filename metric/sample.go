@@ -82,7 +82,7 @@ func NewSamples(series *Series, mSeries MonitorSeries) (s *Samples, err error) {
 	}
 
 	for i := 0; i < len(mSeries.Data.Points); i++ {
-		value, err := strconv.ParseFloat(mSeries.Data.Points[i].Avg, 64)
+		value, err := strconv.ParseFloat(mSeries.Data.Points[i].Max, 64)
 		if err != nil {
 			continue
 		}
