@@ -263,7 +263,7 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 		if _, isExist := ms[id]; isExist {
 			samples, ql, e := repo.buildSamples(ms[id], points)
 			if e != nil {
-				level.Debug(repo.logger).Log(
+				level.Error(repo.logger).Log(
 					"msg", e.Error(),
 					"metric", ms[id].Meta.MetricName,
 					"dimension", fmt.Sprintf("%v", ql))

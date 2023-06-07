@@ -112,7 +112,7 @@ func (c *MetricCache) checkMetaNeedReload(namespace, instanceId string) (err err
 
 	c.metaLastReloadTime[key] = time.Now().Unix()
 
-	level.Info(c.logger).Log("msg", "Reload metric meta cache", "namespace", namespace, "num", len(np))
+	level.Debug(c.logger).Log("msg", "Reload metric meta cache", "namespace", namespace, "num", len(np))
 	return
 }
 

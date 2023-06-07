@@ -310,8 +310,14 @@ func NewMetric(meta *Meta, conf *MetricConf) (*Metric, error) {
 
 	statType := "last"
 
+	displayMetricName := FilterByMetricName(meta.MetricName)
+
+	// 显示的指标名称
+	vmn := util.PointToUnderline(displayMetricName)
+	vmn = util.MiddleToUnderline(vmn)
+
 	help := fmt.Sprintf("%s %s %s %s",
-		meta.MetricName,
+		vmn,
 		meta.Namespace,
 		*meta.m.MetricDesc,
 		*meta.m.Unit,
@@ -324,11 +330,6 @@ func NewMetric(meta *Meta, conf *MetricConf) (*Metric, error) {
 		} else {
 			st = strings.ToLower(s)
 		}
-
-		displayMetricName := FilterByMetricName(meta.MetricName)
-		// 显示的指标名称
-		vmn := util.PointToUnderline(displayMetricName)
-		vmn = util.MiddleToUnderline(vmn)
 
 		fqName := fmt.Sprintf("%s_%s",
 			vmn,

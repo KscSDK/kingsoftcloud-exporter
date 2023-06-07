@@ -4,7 +4,7 @@ var AllKECMetricConfigs = []KscMetricConfig{
 	{
 		Namespace:        "KEC",
 		MetricName:       "system.cpu.load[percpu,avg1]",
-		MetricDesc:       "CPU1分钟平均负载(每核)",
+		MetricDesc:       "CPU每核平均负载",
 		MetricType:       2,
 		Labels:           []string{"type", "aggtype"},
 		Statistics:       []string{"avg"},
@@ -14,7 +14,7 @@ var AllKECMetricConfigs = []KscMetricConfig{
 	{
 		Namespace:        "KEC",
 		MetricName:       "system.cpu.load[percpu,avg5]",
-		MetricDesc:       "CPU5分钟平均负载(每核)",
+		MetricDesc:       "CPU每核平均负载",
 		MetricType:       2,
 		Labels:           []string{"type", "aggtype"},
 		Statistics:       []string{"avg"},
@@ -24,7 +24,7 @@ var AllKECMetricConfigs = []KscMetricConfig{
 	{
 		Namespace:        "KEC",
 		MetricName:       "system.cpu.load[percpu,avg15]",
-		MetricDesc:       "CPU15分钟平均负载(每核)",
+		MetricDesc:       "CPU每核平均负载",
 		MetricType:       2,
 		Labels:           []string{"type", "aggtype"},
 		Statistics:       []string{"avg"},
@@ -34,7 +34,7 @@ var AllKECMetricConfigs = []KscMetricConfig{
 	{
 		Namespace:        "KEC",
 		MetricName:       "system.cpu.load[all,avg1]",
-		MetricDesc:       "CPU1分钟平均负载",
+		MetricDesc:       "CPU平均负载",
 		MetricType:       2,
 		Labels:           []string{"type", "aggtype"},
 		Statistics:       []string{"avg"},
@@ -44,7 +44,7 @@ var AllKECMetricConfigs = []KscMetricConfig{
 	{
 		Namespace:        "KEC",
 		MetricName:       "system.cpu.load[all,avg5]",
-		MetricDesc:       "CPU5分钟平均负载",
+		MetricDesc:       "CPU平均负载",
 		MetricType:       2,
 		Labels:           []string{"type", "aggtype"},
 		Statistics:       []string{"avg"},
@@ -54,7 +54,7 @@ var AllKECMetricConfigs = []KscMetricConfig{
 	{
 		Namespace:        "KEC",
 		MetricName:       "system.cpu.load[all,avg15]",
-		MetricDesc:       "CPU15分钟平均负载",
+		MetricDesc:       "CPU平均负载",
 		MetricType:       2,
 		Labels:           []string{"type", "aggtype"},
 		Statistics:       []string{"avg"},

@@ -50,13 +50,12 @@ func (c *KscProductCollector) Collect(ch chan<- prometheus.Metric) (err error) {
 	for _, queries := range queriesGroup {
 		go func(q []*metric.Query) {
 			defer wg.Done()
-			pms, err0 := metric.GetPromMetricsByQueries(q, c.logger)
-			if err0 != nil {
+			pms, err := metric.GetPromMetricsByQueries(q, c.logger)
+			if err != nil {
 				level.Error(c.logger).Log(
 					"msg", "Get samples fail",
 					"err", err,
 				)
-				err = err0
 			} else {
 				for _, pm := range pms {
 					ch <- pm
