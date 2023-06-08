@@ -316,15 +316,18 @@ func NewMetric(meta *Meta, conf *MetricConf) (*Metric, error) {
 
 	statType := "last"
 
-	displayMetricName := FilterByMetricName(meta.MetricName)
+	vmn := meta.MetricName
+	if len(meta.MetricReName) > 0 {
+		vmn = meta.MetricReName
+	}
 
 	// 显示的指标名称
-	vmn := util.PointToUnderline(displayMetricName)
+	vmn = FilterByMetricName(vmn)
+	vmn = util.PointToUnderline(vmn)
 	vmn = util.MiddleToUnderline(vmn)
 
-	help := fmt.Sprintf("%s %s %s %s",
+	help := fmt.Sprintf("%s %s %s",
 		vmn,
-		meta.Namespace,
 		*meta.m.MetricDesc,
 		*meta.m.Unit,
 	)

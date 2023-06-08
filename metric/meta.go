@@ -14,6 +14,7 @@ type Meta struct {
 	Namespace         string
 	ProductName       string
 	MetricName        string
+	MetricReName      string
 	SupportDimensions []string
 	m                 *MetricSet
 }
@@ -78,6 +79,7 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 
 	labels := make(map[string]string)
 
+	metricReName := ""
 	if len(dimensionValues) > 0 {
 		//根据配置的查找对应的labels
 		if _, isExist := metricConfigMap[*m.MetricName]; isExist {
@@ -107,11 +109,15 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 			}
 
 			if metricName == "net.if.in" && len(dimensionValues) >= 2 {
-				*m.MetricDesc = "网卡入包速率"
+				metricReName = "net.if.in.pps"
+				*m.MetricDesc = "网卡入包数"
+				*m.Unit = "pps"
 			}
 
 			if metricName == "net.if.out" && len(dimensionValues) >= 2 {
-				*m.MetricDesc = "网卡出包速率"
+				metricReName = "net.if.out.pps"
+				*m.MetricDesc = "网卡出包数"
+				*m.Unit = "pps"
 			}
 		}
 	}
@@ -129,9 +135,11 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 		Namespace:         *m.Namespace,
 		ProductName:       *m.Namespace,
 		MetricName:        *m.MetricName,
+		MetricReName:      metricReName,
 		SupportDimensions: supportDimensions,
 		m:                 m,
 	}
+
 	return meta, nil
 }
 
