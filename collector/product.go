@@ -43,7 +43,12 @@ func (c *KscProductCollector) GetMetrics() error {
 func (c *KscProductCollector) Collect(ch chan<- prometheus.Metric) (err error) {
 	wg := sync.WaitGroup{}
 
-	queriesGroup := c.Queries.SplitByBatch(config.DefaultQueryMetricBatchSize)
+	batchSize := config.DefaultQueryMetricBatchSize
+	if c.Namespace == "KS3" {
+		batchSize = config.DefaultKS3QueryMetricBatchSize
+	}
+
+	queriesGroup := c.Queries.SplitByBatch(batchSize)
 
 	wg.Add(len(queriesGroup))
 

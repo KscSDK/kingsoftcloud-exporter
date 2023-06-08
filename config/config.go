@@ -13,11 +13,12 @@ import (
 )
 
 const (
-	DefaultPeriodSeconds         = 60
-	DefaultDelaySeconds          = 300
-	DefaultReloadIntervalMinutes = 30
-	DefaultRateLimit             = 10
-	DefaultQueryMetricBatchSize  = 2000
+	DefaultPeriodSeconds           = 60
+	DefaultDelaySeconds            = 300
+	DefaultReloadIntervalMinutes   = 30
+	DefaultRateLimit               = 10
+	DefaultQueryMetricBatchSize    = 2000
+	DefaultKS3QueryMetricBatchSize = 60
 
 	ENV_AccessKey   = "KS_CLOUD_SECRET_ID"
 	ENV_SecretKey   = "KS_CLOUD_SECRET_KEY"
