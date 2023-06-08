@@ -120,6 +120,31 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 				*m.Unit = "pps"
 			}
 		}
+
+		if *m.MetricName == "vm.memory.size[total]" {
+			metricReName = "vm.memory.total.size"
+			*m.MetricDesc = "总内存"
+			*m.Unit = "B"
+		}
+
+		if *m.MetricName == "vm.memory.size[available]" {
+			metricReName = "vm.memory.available.size"
+			*m.MetricDesc = "可用内存"
+			*m.Unit = "B"
+		}
+
+		if *m.MetricName == "vm.memory.size[used]" {
+			metricReName = "vm.memory.used.size"
+			*m.MetricDesc = "已用内存"
+			*m.Unit = "B"
+		}
+
+		if *m.MetricName == "vm.memory.size[pavailable]" {
+			metricReName = "vm.memory.available.utilization"
+			*m.MetricDesc = "内存可用率"
+			*m.Unit = "%"
+		}
+
 	}
 
 	m.Dimensions = &labels
