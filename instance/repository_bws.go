@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
@@ -87,12 +88,23 @@ getMoreInstances:
 
 type DescribeBandWidthSharesResponse struct {
 	BandWidthShareSet []*InstanceBWSMeta `json:"BandWidthShareSet"`
+	NextToken         string             `json:"NextToken"`
 	RequestId         string             `json:"RequestId"`
 }
 
 func (repo *InstanceBWSRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
 
+	var maxResults int64 = 300
+
 	level.Info(repo.logger).Log("msg", "BWS 资源开始加载")
+
+	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+		for i := 0; i < len(iam.IAMProjectIDs); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+		}
+	}
+
+	filters["MaxResults"] = maxResults
 
 	resp, err := repo.client.DescribeBandWidthShares(&filters)
 	if err != nil {

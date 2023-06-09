@@ -64,6 +64,7 @@ type Metric struct {
 	StatPromDesc map[string]Desc // 按统计纬度的Desc, max、min、avg、last
 	Conf         *MetricConf
 	seriesLock   sync.Mutex
+	LoadTimeAt   int64 //监控项加载时间
 }
 
 //GetLatestPromMetrics
@@ -358,6 +359,7 @@ func NewMetric(meta *Meta, conf *MetricConf) (*Metric, error) {
 		SeriesCache:  newCache(),
 		StatPromDesc: statPromDesc,
 		Conf:         conf,
+		LoadTimeAt:   time.Now().Unix(),
 	}
 	return m, nil
 }

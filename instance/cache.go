@@ -9,7 +9,7 @@ import (
 	"github.com/go-kit/log/level"
 )
 
-// 可用于产品的实例的缓存, TcInstanceRepository
+// 可用于产品的实例的缓存, InstanceRepository
 type InstanceCache struct {
 	Raw            InstanceRepository
 	cache          map[string]KscInstance

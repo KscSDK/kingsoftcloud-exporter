@@ -98,10 +98,29 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 	}
 
 	//云服务产品是否支持多维度监控项
-	return c.loadMetricsV2(instances)
+	if err := c.loadMetrics(instances); err != nil {
+		return err
+	}
+
+	//加载查询
+	var numSeries int
+	currentTime := time.Now().Unix()
+	for _, m := range c.MetricMap {
+		if currentTime-m.LoadTimeAt <= 60 {
+			q, e := metric.NewQuery(m, c.MetricRepo)
+			if e != nil {
+				return e
+			}
+			c.Queries = append(c.Queries, q)
+			numSeries += len(q.Metric.SeriesCache.Series)
+		}
+	}
+
+	level.Info(c.logger).Log("msg", "Init new query", "Namespace", c.Namespace, "metric_num", len(c.Queries), "new_series_num", numSeries)
+	return nil
 }
 
-func (c *KscProductCollector) loadMetricsV2(instances []instance.KscInstance) error {
+func (c *KscProductCollector) loadMetrics(instances []instance.KscInstance) error {
 	productConf, err := c.Conf.GetProductConfig(c.Namespace)
 	if err != nil {
 		return err
@@ -152,75 +171,6 @@ func (c *KscProductCollector) loadMetricsV2(instances []instance.KscInstance) er
 			}
 		}
 	}
-
-	return nil
-}
-
-func (c *KscProductCollector) loadRemoteMetrics(instances []instance.KscInstance) error {
-	productConf, err := c.Conf.GetProductConfig(c.Namespace)
-	if err != nil {
-		return err
-	}
-
-	// 导出该namespace下的所有指标
-	var excludeMetrics []string
-	if len(productConf.ExcludeMetrics) != 0 {
-		for _, em := range productConf.ExcludeMetrics {
-			excludeMetrics = append(excludeMetrics, strings.ToLower(em))
-		}
-	}
-
-	wg := &sync.WaitGroup{}
-	for _, ins := range instances {
-		wg.Add(1)
-		go func(namespace string, ins instance.KscInstance) {
-			defer func() {
-				if e := recover(); e != nil {
-					level.Warn(c.logger).Log("msg", "request metric list fail", "err", err, "Namespace", c.Namespace, "InstanceId", ins.GetInstanceID())
-				}
-				defer wg.Done()
-			}()
-
-			allMeta, err := c.MetricRepo.ListMetrics(namespace, ins.GetInstanceID())
-			if err != nil {
-				level.Warn(c.logger).Log("msg", "request metric list fail", "err", err, "Namespace", c.Namespace, "InstanceId", ins.GetInstanceID())
-			}
-
-			if len(allMeta) > 0 {
-				for _, meta := range allMeta {
-					if len(excludeMetrics) != 0 && util.IsStrInList(excludeMetrics, strings.ToLower(meta.MetricName)) {
-						continue
-					}
-
-					nm, err := c.createMetricWithMeta(meta, productConf, ins.GetInstanceID())
-					if err != nil {
-
-					} else {
-
-						c.lock.Lock()
-						key := fmt.Sprintf("%s.%s", meta.MetricName, ins.GetInstanceID())
-						// c.MetricMap[nm.Meta.MetricName] = nm
-						c.MetricMap[key] = nm
-						c.lock.Unlock()
-
-						// 获取该指标下的所有实例纬度查询或自定义纬度查询
-						series, err := c.handler.GetSeriesByInstances(nm, []instance.KscInstance{ins})
-
-						if err != nil {
-							level.Error(c.logger).Log("msg", "create metric series err", "err", err, "Namespace", c.Namespace, "name", meta.MetricName)
-						}
-
-						level.Debug(c.logger).Log("msg", "found remote instances", "count", len(series), "Namespace", c.Namespace, "name", meta.MetricName)
-
-						if err := nm.LoadSeries(series); err != nil {
-							level.Error(c.logger).Log("msg", "load metric series err", "err", err, "Namespace", c.Namespace, "name", meta.MetricName)
-						}
-					}
-				}
-			}
-		}(c.Namespace, ins)
-	}
-	wg.Wait()
 
 	return nil
 }
@@ -283,7 +233,7 @@ func (c *KscProductCollector) initQueries() (err error) {
 		c.Queries = append(c.Queries, q)
 		numSeries += len(q.Metric.SeriesCache.Series)
 	}
-	level.Info(c.logger).Log("msg", "Init all query ok", "Namespace", c.Namespace, "numMetric", len(c.Queries), "numSeries", numSeries)
+	level.Info(c.logger).Log("msg", "Init all query ok", "Namespace", c.Namespace, "metric_num", len(c.Queries), "series_num", numSeries)
 	return
 }
 
@@ -376,9 +326,9 @@ func NewKscProductCollector(
 		return nil, err
 	}
 
-	if err = c.initQueries(); err != nil {
-		return nil, err
-	}
+	// if err = c.initQueries(); err != nil {
+	// 	return nil, err
+	// }
 
 	return c, nil
 }
