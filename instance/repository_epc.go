@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
@@ -55,6 +56,12 @@ func (repo *InstanceEPCRepository) ListByFilters(filters map[string]interface{})
 	var maxResults int64 = 300
 
 	level.Info(repo.logger).Log("msg", "EPC 资源开始加载")
+
+	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+		for i := 0; i < len(iam.IAMProjectIDs); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i)] = iam.IAMProjectIDs[i]
+		}
+	}
 
 getMoreInstances:
 

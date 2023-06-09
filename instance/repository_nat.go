@@ -3,8 +3,10 @@ package instance
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
@@ -87,22 +89,28 @@ getMoreInstances:
 
 type DescribeNatSetResponse struct {
 	NatSet    []*InstanceNATMeta `json:"NatSet"`
-	NextToken int64              `json:"NextToken"`
+	NextToken string             `json:"NextToken"`
 	RequestId string             `json:"RequestId"`
 }
 
 func (repo *InstanceNATRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
 
-	// var nextToken int64 = 0
+	var nextToken int64 = 1
 
-	// var maxResults int64 = 10
+	var maxResults int64 = 300
 
 	level.Info(repo.logger).Log("msg", "NAT 资源开始加载")
 
-	// getMoreInstances:
+	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+		for i := 0; i < len(iam.IAMProjectIDs); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+		}
+	}
 
-	// 	filters["Marker"] = nextToken
-	// 	filters["MaxResults"] = maxResults
+getMoreInstances:
+
+	filters["NextToken"] = nextToken
+	filters["MaxResults"] = maxResults
 
 	resp, err := repo.client.DescribeNats(&filters)
 	if err != nil {
@@ -129,16 +137,22 @@ func (repo *InstanceNATRepository) ListByFilters(filters map[string]interface{})
 		instances = append(instances, instance)
 	}
 
-	// nextToken = response.NextToken
-	// if nextToken > 0 {
-	// 	goto getMoreInstances
-	// }
-	level.Info(repo.logger).Log("msg", "NAT 资源加载完毕")
+	var responseNextToken int64 = 0
+	if response.NextToken != "" || len(response.NextToken) > 0 {
+		responseNextToken, _ = strconv.ParseInt(response.NextToken, 10, 64)
+	}
 
-	return nil, nil
+	nextToken = responseNextToken
+	if nextToken > 0 {
+		goto getMoreInstances
+	}
+
+	level.Info(repo.logger).Log("msg", "NAT 资源加载完毕", "instance_num", len(instances))
+
+	return
 }
 
-//NewInstanceSLBRepository
+//NewInstanceNATRepository
 func NewInstanceNATRepository(conf *config.KscExporterConfig, logger log.Logger) (InstanceRepository, error) {
 	svc := vpc.SdkNew(
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),

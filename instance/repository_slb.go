@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/slb"
@@ -43,6 +44,12 @@ func (repo *InstanceSLBRepository) ListByMonitors(filters map[string]interface{}
 	var maxResults int64 = 300
 
 	var totalCount int64 = -1
+
+	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+		for i := 0; i < len(iam.IAMProjectIDs); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+		}
+	}
 
 getMoreInstances:
 

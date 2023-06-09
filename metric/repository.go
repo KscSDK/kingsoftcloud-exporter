@@ -107,20 +107,8 @@ func (repo *MetricRepositoryImpl) ListLocalMetrics(namespace, instanceId string)
 
 	metaSlice := make([]*Meta, 0, len(metricsConf))
 
-	for _, v := range metricsConf {
-
-		interval := strconv.FormatInt(v.MinPeriodSeconds, 10)
-		metricSet := &MetricSet{
-			Namespace:  &namespace,
-			MetricName: &v.MetricName,
-			MetricDesc: &v.MetricDesc,
-			InstanceID: &instanceId,
-			Interval:   &interval,
-			Statistics: &v.Statistics,
-			Unit:       &v.Unit,
-		}
-
-		m, err := NewMeta(metricSet)
+	for i := 0; i < len(metricsConf); i++ {
+		m, err := repo.GetMeta(metricsConf[i], instanceId)
 		if err != nil {
 			return nil, err
 		}

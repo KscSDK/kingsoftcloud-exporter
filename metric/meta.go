@@ -177,8 +177,8 @@ func NewMeta(m *MetricSet) (*Meta, error) {
 
 	m.Dimensions = &labels
 
-	if m.MetricDesc == nil || len(*m.MetricDesc) <= 0 {
-		m.MetricDesc = m.MetricName
+	if len(*m.MetricDesc) <= 0 {
+		*m.MetricDesc = *m.MetricName
 	}
 
 	meta := &Meta{

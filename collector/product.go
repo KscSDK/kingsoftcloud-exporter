@@ -83,6 +83,7 @@ func (c *KscProductCollector) LoadMetricsByMetricConf() error {
 
 // 产品纬度配置
 func (c *KscProductCollector) LoadMetricsByProductConf() error {
+	fmt.Println(fmt.Sprintf("=====Start Load Namespace: %+v====", c.Namespace))
 	if len(c.MetricMap) == 0 {
 		c.MetricMap = make(map[string]*metric.Metric)
 	}
@@ -95,8 +96,6 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(fmt.Sprintf("=====Namespace: %+v====", c.Namespace))
 
 	//云服务产品是否支持多维度监控项
 	return c.loadMetricsV2(instances)
