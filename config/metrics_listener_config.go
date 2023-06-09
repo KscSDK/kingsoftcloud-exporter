@@ -196,7 +196,7 @@ var AllLISTENER7MetricConfigs = []KscMetricConfig{
 		Unit:             "个",
 	}, {
 		Namespace:        "LISTENER7",
-		MetricName:       "listener.httpcode.backend.4XX",
+		MetricName:       "listener.httpcode.backend.4xx",
 		MetricDesc:       "真实服务器返回的4XX的状态码数量",
 		MetricType:       1,
 		Labels:           []string{},
