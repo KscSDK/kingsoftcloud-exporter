@@ -245,6 +245,12 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 		return nil, err
 	}
 
+	if len(rep.ErrorMessage) > 0 {
+		for _, v := range rep.ErrorMessage {
+			level.Error(repo.logger).Log("msg", v)
+		}
+	}
+
 	metricSamplesList := make(map[string][]*Samples)
 	for _, points := range rep.Result {
 		id := fmt.Sprintf("%s.%s", points.Label, points.InstanceId)
@@ -349,6 +355,7 @@ func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 
 		requestMetrics = append(requestMetrics, requestMetric)
 	}
+
 	requestParams["Metrics"] = requestMetrics
 
 	return requestParams

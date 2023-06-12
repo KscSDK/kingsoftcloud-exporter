@@ -19,6 +19,7 @@ type MonitorSeries struct {
 }
 
 type GetMetricStatisticsBatchResponse struct {
-	Result   []MonitorSeries  `json:"getMetricStatisticsBatchResults"`
-	Metadata ResponseMetadata `json:"responseMetadata"`
+	Result       []MonitorSeries  `json:"getMetricStatisticsBatchResults"`
+	Metadata     ResponseMetadata `json:"responseMetadata"`
+	ErrorMessage []string         `json:"errorMessage"`
 }
