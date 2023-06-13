@@ -83,15 +83,16 @@ var (
 
 //Credential
 type Credential struct {
-	AccessKey     string `yaml:"access_key"`
-	SecretKey     string `yaml:"secret_key"`
-	Role          string `yaml:"role"`
-	MockAccountId string `yaml:"mock_inner_account"`
-	MockInnerURL  string `yaml:"mock_inner_url"`
-	Region        string `yaml:"region"`
-	Token         string `yaml:"token"`
-	ExpiredTime   int64  `yaml:"expired_time"`
-	IsInternal    bool   `yaml:"is_internal"`
+	AccessKey            string `yaml:"access_key"`
+	SecretKey            string `yaml:"secret_key"`
+	Role                 string `yaml:"role"`
+	AccessAccount        string `yaml:"access_account"`
+	AccessInstancesURL   string `yaml:"access_instances_url"`
+	AccessMonitorMetaURL string `yaml:"access_monitor_meta_url"`
+	Region               string `yaml:"region"`
+	Token                string `yaml:"token"`
+	ExpiredTime          int64  `yaml:"expired_time"`
+	IsInternal           bool   `yaml:"is_internal"`
 }
 
 //MonitorMetricConf

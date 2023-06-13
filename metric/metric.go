@@ -74,7 +74,12 @@ func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, log
 	st := now - int64(180)
 	et := now - int64(120)
 
-	metricSamples, err := repo.ListBatchSamples(metrics, st, et)
+	metricSamples := make(map[string][]*Samples)
+	if config.ExporterRunningMode == config.ExporterMode_Mock {
+		metricSamples, err = repo.DescribeMonitorData(metrics, st, et)
+	} else {
+		metricSamples, err = repo.ListBatchSamples(metrics, st, et)
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -47,7 +47,14 @@ func (repo *InstanceListener7Repository) ListByMonitors(filters map[string]inter
 
 getMoreHTTPInstances:
 
-	instancesHTTP, instancesHTTPCount, err := DescribeMonitorInstances(repo.credential.MockInnerURL, repo.credential.MockAccountId, 24, marker, maxResults, repo.credential.Region)
+	instancesHTTP, instancesHTTPCount, err := DescribeMonitorInstances(
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
+		24,
+		marker,
+		maxResults,
+		repo.credential.Region,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +92,8 @@ getMoreHTTPInstances:
 
 getMoreHTTPSInstances:
 	instancesHTTPS, instancesHTTPSCount, err := DescribeMonitorInstances(
-		repo.credential.MockInnerURL,
-		repo.credential.MockAccountId,
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
 		27,
 		marker,
 		maxResults,

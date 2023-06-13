@@ -80,6 +80,10 @@ func (c *MetricCache) ListBatchSamples(m map[string]*Metric, startTime int64, en
 	return c.Raw.ListBatchSamples(m, startTime, endTime)
 }
 
+func (c *MetricCache) DescribeMonitorData(m map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error) {
+	return c.Raw.DescribeMonitorData(m, startTime, endTime)
+}
+
 //checkMetaNeedReload 检测是否需要reload缓存的数据
 func (c *MetricCache) checkMetaNeedReload(namespace, instanceId string) (err error) {
 	key := fmt.Sprintf("%s-%s", namespace, instanceId)

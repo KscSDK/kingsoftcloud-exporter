@@ -54,8 +54,8 @@ func (repo *InstanceSLBRepository) ListByMonitors(filters map[string]interface{}
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
-		repo.credential.MockInnerURL,
-		repo.credential.MockAccountId,
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
 		7,
 		marker,
 		maxResults,

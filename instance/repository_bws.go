@@ -48,8 +48,8 @@ func (repo *InstanceBWSRepository) ListByMonitors(filters map[string]interface{}
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
-		repo.credential.MockInnerURL,
-		repo.credential.MockAccountId,
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
 		11,
 		marker,
 		maxResults,

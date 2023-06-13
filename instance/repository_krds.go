@@ -46,8 +46,8 @@ func (repo *InstanceRDSRepository) ListByMonitors(filters map[string]interface{}
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
-		repo.credential.MockInnerURL,
-		repo.credential.MockAccountId,
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
 		2,
 		marker,
 		maxResults,

@@ -47,7 +47,12 @@ func (repo *InstanceListenerRepository) ListByMonitors(filters map[string]interf
 
 getMoreTCPInstances:
 
-	instancesTCP, instancesTCPCount, err := DescribeMonitorInstances(repo.credential.MockInnerURL, repo.credential.MockAccountId, 25, marker, maxResults, repo.credential.Region)
+	instancesTCP, instancesTCPCount, err := DescribeMonitorInstances(
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
+		25, marker, maxResults,
+		repo.credential.Region,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +91,8 @@ getMoreTCPInstances:
 
 getMoreUDPInstances:
 	instancesUDP, instancesUDPCount, err := DescribeMonitorInstances(
-		repo.credential.MockInnerURL,
-		repo.credential.MockAccountId,
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
 		27,
 		marker,
 		maxResults,

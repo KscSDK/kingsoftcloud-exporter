@@ -1,9 +1,14 @@
 package metric
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/textproto"
 	"strconv"
 	"time"
 
@@ -13,6 +18,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/monitor"
 	v2 "github.com/KscSDK/ksc-sdk-go/service/monitorv2"
 	v3 "github.com/KscSDK/ksc-sdk-go/service/monitorv3"
+	"github.com/google/uuid"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -35,6 +41,8 @@ type MetricRepository interface {
 
 	// 按时间范围获取单个指标下所有时间线的数据点
 	ListSamples(metric *Metric, startTime int64, endTime int64) (samplesList []*Samples, err error)
+
+	DescribeMonitorData(metric map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error)
 }
 
 //MetricRepositoryImpl
@@ -189,16 +197,7 @@ func (repo *MetricRepositoryImpl) listMetricsRequest(namespace, instanceId strin
 }
 
 func (repo *MetricRepositoryImpl) ListSamples(m *Metric, st int64, et int64) ([]*Samples, error) {
-	var samplesList []*Samples
-	for _, seriesList := range m.GetSeriesSplitByBatch(repo.queryMetricBatchSize) {
-		sl, err := repo.getMetricStatistics(m, seriesList, st, et)
-		if err != nil {
-			level.Error(repo.logger).Log("msg", err.Error())
-			continue
-		}
-		samplesList = append(samplesList, sl...)
-	}
-	return samplesList, nil
+	return nil, nil
 }
 
 func (repo *MetricRepositoryImpl) ListBatchSamples(m map[string]*Metric, st int64, et int64) (map[string][]*Samples, error) {
@@ -270,54 +269,6 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 	return metricSamplesList, nil
 }
 
-func (repo *MetricRepositoryImpl) getMetricStatistics(
-	m *Metric,
-	seriesList []*Series,
-	st int64,
-	et int64,
-) ([]*Samples, error) {
-	var samplesList []*Samples
-
-	ctx, cancel := context.WithCancel(repo.ctx)
-	defer cancel()
-
-	err := repo.limiter.Wait(ctx)
-	if err != nil {
-		return nil, err
-	}
-	requestParams := repo.buildGetMonitorDataRequest(m, seriesList, st, et)
-
-	start := time.Now()
-	resp, err := repo.monitorClientV2.GetMetricStatisticsBatch(&requestParams)
-	if err != nil {
-		level.Error(repo.logger).Log("request start time ", requestParams["StartTime"], "duration ", time.Since(start).Seconds(), "err ", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, fmt.Errorf("get monitor data is empty")
-	}
-
-	respBytes, _ := json.Marshal(&resp)
-	var rep GetMetricStatisticsBatchResponse
-	if err := json.Unmarshal(respBytes, &rep); err != nil {
-		return nil, err
-	}
-
-	for _, points := range rep.Result {
-		samples, ql, e := repo.buildSamples(m, points)
-		if e != nil {
-			level.Debug(repo.logger).Log(
-				"msg", e.Error(),
-				"metric", m.Meta.MetricName,
-				"dimension", fmt.Sprintf("%v", ql))
-			continue
-		}
-		samplesList = append(samplesList, samples)
-	}
-
-	return samplesList, nil
-}
-
 type RequestMonitorMetric struct {
 	InstanceID string `json:"InstanceID"`
 	MetricName string `json:"MetricName"`
@@ -361,33 +312,6 @@ func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 	return requestParams
 }
 
-func (repo *MetricRepositoryImpl) buildGetMonitorDataRequest(
-	m *Metric,
-	seriesList []*Series,
-	st, et int64,
-) map[string]interface{} {
-
-	requestParams := make(map[string]interface{})
-	requestParams["Namespace"] = m.Conf.CustomProductName
-	requestParams["StartTime"] = time.Unix(st, 0).Format("2006-01-02T15:04:05Z")
-	requestParams["EndTime"] = time.Unix(et, 0).Format("2006-01-02T15:04:05Z")
-	requestParams["Period"] = 60
-	requestParams["Aggregate"] = []string{"Max"}
-
-	requestMetrics := make([]*RequestMonitorMetric, 0, len(seriesList))
-	for _, series := range seriesList {
-		requestMetric := &RequestMonitorMetric{
-			InstanceID: series.Instance.GetInstanceID(),
-			MetricName: series.Metric.Meta.MetricName,
-		}
-
-		requestMetrics = append(requestMetrics, requestMetric)
-	}
-	requestParams["Metrics"] = requestMetrics
-
-	return requestParams
-}
-
 func (repo *MetricRepositoryImpl) buildSamples(
 	m *Metric,
 	mSeries MonitorSeries,
@@ -408,6 +332,103 @@ func (repo *MetricRepositoryImpl) buildSamples(
 		return nil, ql, fmt.Errorf("this instance may not have metric data")
 	}
 	return samples, ql, nil
+}
+
+//DescribeMonitorData
+func (repo *MetricRepositoryImpl) DescribeMonitorData(m map[string]*Metric, st int64, et int64) (map[string][]*Samples, error) {
+	ctx, cancel := context.WithCancel(repo.ctx)
+	defer cancel()
+
+	err := repo.limiter.Wait(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	requestParams := repo.buildGetMonitorRequest(m, st, et)
+
+	start := time.Now()
+	rep, err := repo.describeMonitorDataRequest(&requestParams)
+	if err != nil {
+		level.Error(repo.logger).Log("request start time ", requestParams["StartTime"], "duration ", time.Since(start).Seconds(), "err ", err.Error())
+		return nil, err
+	}
+
+	if len(rep.ErrorMessage) > 0 {
+		for _, v := range rep.ErrorMessage {
+			level.Error(repo.logger).Log("msg", v)
+		}
+	}
+
+	metricSamplesList := make(map[string][]*Samples)
+	for _, points := range rep.Result {
+		id := fmt.Sprintf("%s.%s", points.Label, points.InstanceId)
+		if _, isExist := m[id]; isExist {
+			samples, ql, e := repo.buildSamples(m[id], points)
+			if e != nil {
+				level.Error(repo.logger).Log(
+					"msg", e.Error(),
+					"metric", m[id].Meta.MetricName,
+					"dimension", fmt.Sprintf("%v", ql))
+				continue
+			}
+			metricSamplesList[id] = append(metricSamplesList[id], samples)
+		}
+	}
+
+	return metricSamplesList, nil
+}
+
+func (repo *MetricRepositoryImpl) describeMonitorDataRequest(input *map[string]interface{}) (GetMetricStatisticsBatchResponse, error) {
+	var response GetMetricStatisticsBatchResponse
+
+	if len(repo.exporterConf.Credential.AccessMonitorMetaURL) <= 0 {
+		return response, fmt.Errorf("mock inner url is empty.")
+	}
+
+	dataJSON, err := json.Marshal(input)
+	if err != nil {
+		return response, err
+	}
+	req, err := http.NewRequest(http.MethodPost, repo.exporterConf.Credential.AccessMonitorMetaURL, bytes.NewBuffer(dataJSON))
+	if err != nil {
+		return response, err
+	}
+
+	requestID := uuid.New().String()
+
+	req.Header = http.Header{
+		textproto.CanonicalMIMEHeaderKey("Content-Type"):     []string{"application/json"},
+		textproto.CanonicalMIMEHeaderKey("Accept"):           []string{"application/json"},
+		textproto.CanonicalMIMEHeaderKey("X-KSC-ACCOUNT-ID"): []string{repo.exporterConf.Credential.AccessAccount},
+		textproto.CanonicalMIMEHeaderKey("X-Ksc-Region"):     []string{repo.exporterConf.Credential.Region},
+		textproto.CanonicalMIMEHeaderKey("X-Ksc-Request-Id"): []string{requestID},
+	}
+
+	c := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns: 100,
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return response, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return response, errors.New(string(body))
+	}
+
+	if err := json.Unmarshal(body, &response); err != nil {
+		return response, fmt.Errorf("parse monitor data err, %+v", err)
+	}
+
+	return response, nil
 }
 
 //NewMetricRepository
