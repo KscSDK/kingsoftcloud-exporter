@@ -24,7 +24,7 @@ func (i *InstanceDCGW) GetMeta() interface{} {
 
 //GetInstanceID
 func (i *InstanceDCGW) GetInstanceName() string {
-	return "eip"
+	return i.meta.DirectConnectGatewayName
 }
 
 func (i *InstanceDCGW) GetInstanceIP() string {
