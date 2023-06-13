@@ -59,11 +59,11 @@ getMoreInstances:
 	}
 
 	for _, v := range l {
-		meta := &InstanceNATMeta{
-			NatId:   v.InstanceID,
-			NatName: v.InstanceName,
+		meta := &InstanceDCGWMeta{
+			DirectConnectGatewayId:   v.InstanceID,
+			DirectConnectGatewayName: v.InstanceName,
 		}
-		ins := &InstanceNAT{
+		ins := &InstanceDCGW{
 			InstanceBase: InstanceBase{
 				InstanceID: v.InstanceID,
 			},
