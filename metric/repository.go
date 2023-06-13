@@ -233,7 +233,7 @@ func (repo *MetricRepositoryImpl) describeMetricsMetaRequest(namespace, instance
 		Transport: &http.Transport{
 			MaxIdleConns: 100,
 		},
-		Timeout: 10 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	resp, err := c.Do(req)
@@ -473,7 +473,7 @@ func (repo *MetricRepositoryImpl) describeMonitorDataRequest(input *map[string]i
 		Transport: &http.Transport{
 			MaxIdleConns: 100,
 		},
-		Timeout: 10 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	resp, err := c.Do(req)
