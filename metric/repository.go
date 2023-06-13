@@ -136,7 +136,13 @@ func (repo *MetricRepositoryImpl) ListMetrics(namespace, instanceId string) ([]*
 		return nil, err
 	}
 
-	metricSets, err := repo.listMetricsRequest(namespace, instanceId)
+	var metricSets []*MetricSet
+	var err error
+	if config.ExporterRunningMode == config.ExporterMode_Mock {
+		metricSets, err = repo.describeMetricsMetaRequest(namespace, instanceId)
+	} else {
+		metricSets, err = repo.listMetricsRequest(namespace, instanceId)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -187,6 +193,65 @@ func (repo *MetricRepositoryImpl) listMetricsRequest(namespace, instanceId strin
 	var response ListMetricsResponse
 	if err := json.Unmarshal(respBytes, &response); err != nil {
 		return nil, err
+	}
+
+	if len(response.List.Metrics.Member) <= 0 {
+		return nil, fmt.Errorf("response metricSet size <= 0")
+	}
+
+	return response.List.Metrics.Member, nil
+}
+
+//describeMetricsMetaRequest
+func (repo *MetricRepositoryImpl) describeMetricsMetaRequest(namespace, instanceId string) ([]*MetricSet, error) {
+	if len(repo.exporterConf.Credential.AccessMetricMetaURL) <= 0 {
+		return nil, fmt.Errorf("mock inner url is empty.")
+	}
+
+	apiURL := fmt.Sprintf("%s&InstanceID=%s&Namespace=%s&PageIndex=1",
+		repo.exporterConf.Credential.AccessMetricMetaURL,
+		instanceId,
+		namespace,
+	)
+
+	req, err := http.NewRequest(http.MethodGet, apiURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	requestID := uuid.New().String()
+
+	req.Header = http.Header{
+		textproto.CanonicalMIMEHeaderKey("Content-Type"):     []string{"application/json"},
+		textproto.CanonicalMIMEHeaderKey("Accept"):           []string{"application/json"},
+		textproto.CanonicalMIMEHeaderKey("X-KSC-ACCOUNT-ID"): []string{repo.exporterConf.Credential.AccessAccount},
+		textproto.CanonicalMIMEHeaderKey("X-Ksc-Region"):     []string{repo.exporterConf.Credential.Region},
+		textproto.CanonicalMIMEHeaderKey("X-Ksc-Request-Id"): []string{requestID},
+	}
+
+	c := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConns: 100,
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(string(body))
+	}
+
+	var response ListMetricsResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("parse monitor data err, %+v", err)
 	}
 
 	if len(response.List.Metrics.Member) <= 0 {

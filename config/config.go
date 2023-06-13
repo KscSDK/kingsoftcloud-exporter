@@ -89,6 +89,7 @@ type Credential struct {
 	AccessAccount        string `yaml:"access_account"`
 	AccessInstancesURL   string `yaml:"access_instances_url"`
 	AccessMonitorMetaURL string `yaml:"access_monitor_meta_url"`
+	AccessMetricMetaURL  string `yaml:"access_metric_meta_url"`
 	Region               string `yaml:"region"`
 	Token                string `yaml:"token"`
 	ExpiredTime          int64  `yaml:"expired_time"`

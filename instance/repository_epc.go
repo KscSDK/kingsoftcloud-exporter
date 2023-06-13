@@ -39,7 +39,54 @@ func (repo *InstanceEPCRepository) ListByIds(id []string) (instances []KscInstan
 }
 
 func (repo *InstanceEPCRepository) ListByMonitors(filters map[string]interface{}) (instances []KscInstance, err error) {
-	return nil, nil
+	var marker int64 = 1
+
+	var maxResults int64 = 300
+
+	var totalCount int64 = -1
+
+getMoreInstances:
+
+	l, count, err := DescribeMonitorInstances(
+		repo.credential.AccessInstancesURL,
+		repo.credential.AccessAccount,
+		15,
+		marker,
+		maxResults,
+		repo.credential.Region,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range l {
+		meta := &InstancesKECMeta{
+			AvailabilityZone: v.Region,
+			InstanceId:       v.InstanceID,
+			InstanceName:     v.InstanceName,
+			PrivateIpAddress: v.InstanceIP,
+		}
+		ins := &InstanceKEC{
+			InstanceBase: InstanceBase{
+				InstanceID: v.InstanceID,
+			},
+			meta: meta,
+		}
+		instances = append(instances, ins)
+	}
+
+	if totalCount == -1 {
+		totalCount = count
+	}
+
+	if (marker * maxResults) < totalCount {
+		marker++
+		goto getMoreInstances
+	}
+
+	level.Info(repo.logger).Log("msg", "EPC 资源加载完毕", "instance_num", len(instances))
+
+	return
 }
 
 type DescribeEPCsResponse struct {

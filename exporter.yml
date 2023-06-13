@@ -8,9 +8,10 @@ credential:
   access_key: "AKLT4bia4HXUQ_-sGp-gfV_3oQ"
   secret_key: "OIij6teBZOiBwBAbAfAULAtdyMyGJIvyCavKHiI0K+1I1GoYZEfAoXXj2aruWiOLsw=="
   region: "cn-beijing-6"
-  access_account: "73401193"
+  access_account: "2000096029"
   access_instances_url: "http://monitor.console.sdns.ksyun.com/?Action=DescribeMonitorInstances&Version=2021-01-01"
   access_monitor_meta_url: "http://10.78.24.26:8090/v2/?Action=GetMetricStatisticsBatch&Version=2018-11-14"
+  access_metric_meta_url: "http://10.78.24.26:8090/?Action=ListMetrics&Version=2010-05-25"
 
 # 整个产品纬度配置, 每个产品一个item
 product_conf:
@@ -24,16 +25,16 @@ product_conf:
   #   period_seconds: 60
   #   range_seconds: 300
   #   delay_seconds: 60
-  - namespace: KEC
-    reload_interval_minutes: 60
-    period_seconds: 60
-    range_seconds: 300
-    delay_seconds: 60
-    debug_metrics:
-      - "system.cpu.load[percpu,avg1].046985f0-d3ce-4a5d-97d0-e09b86034e28"
-      - "system.cpu.load[percpu,avg5].046985f0-d3ce-4a5d-97d0-e09b86034e28"
-      - "system.cpu.load[percpu,avg15].046985f0-d3ce-4a5d-97d0-e09b86034e28"
-      - "cpu.utilizition.total.046985f0-d3ce-4a5d-97d0-e09b86034e28"
+  # - namespace: KEC
+  #   reload_interval_minutes: 60
+  #   period_seconds: 60
+  #   range_seconds: 300
+  #   delay_seconds: 60
+  #   debug_metrics:
+  #     - "system.cpu.load[percpu,avg1].046985f0-d3ce-4a5d-97d0-e09b86034e28"
+  #     - "system.cpu.load[percpu,avg5].046985f0-d3ce-4a5d-97d0-e09b86034e28"
+  #     - "system.cpu.load[percpu,avg15].046985f0-d3ce-4a5d-97d0-e09b86034e28"
+  #     - "cpu.utilizition.total.046985f0-d3ce-4a5d-97d0-e09b86034e28"
   # - namespace: EIP # 必须, 产品命名空间
   #   # only_include_metrics: # 可选，只导出指标列表
   #   #   - eip.bps.in
@@ -46,11 +47,11 @@ product_conf:
   #   period_seconds: 60
   #   range_seconds: 300
   #   delay_seconds: 60
-  # - namespace: SLB
-  #   reload_interval_minutes: 5
-  #   period_seconds: 60
-  #   range_seconds: 300
-  #   delay_seconds: 60
+  - namespace: SLB
+    reload_interval_minutes: 5
+    period_seconds: 60
+    range_seconds: 300
+    delay_seconds: 60
   # - namespace: DCGW
   #   reload_interval_minutes: 5
   #   period_seconds: 60
