@@ -88,8 +88,10 @@ func (c *MetricCache) DescribeMonitorData(m map[string]*Metric, startTime int64,
 func (c *MetricCache) checkMetaNeedReload(namespace, instanceId string) (err error) {
 	key := fmt.Sprintf("%s-%s", namespace, instanceId)
 
+	currentTime := time.Now().Unix()
+
 	v, ok := c.metaLastReloadTime[key]
-	if ok && v != 0 {
+	if ok && currentTime-v < 60 {
 		return nil
 	}
 
@@ -114,7 +116,7 @@ func (c *MetricCache) checkMetaNeedReload(namespace, instanceId string) (err err
 		np[id] = meta
 	}
 
-	c.metaLastReloadTime[key] = time.Now().Unix()
+	c.metaLastReloadTime[key] = currentTime
 
 	level.Debug(c.logger).Log("msg", "Reload metric meta cache", "namespace", namespace, "num", len(np))
 	return

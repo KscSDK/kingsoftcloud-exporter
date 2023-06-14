@@ -91,6 +91,7 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 	if err := iam.ReloadIAMProjects(c.Conf, c.logger); err != nil {
 		//TODO:
 	}
+
 	//提前先加载资源
 	instances, err := c.handler.GetInstances()
 	if err != nil {
@@ -106,7 +107,7 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 	var numSeries int
 	currentTime := time.Now().Unix()
 	for _, m := range c.MetricMap {
-		if currentTime-m.LoadTimeAt <= 60 {
+		if currentTime-m.LoadTimeAt < 60 {
 			q, e := metric.NewQuery(m, c.MetricRepo)
 			if e != nil {
 				return e
