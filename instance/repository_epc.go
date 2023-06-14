@@ -45,6 +45,8 @@ func (repo *InstanceEPCRepository) ListByMonitors(filters map[string]interface{}
 
 	var totalCount int64 = -1
 
+	level.Info(repo.logger).Log("msg", "EPC 资源开始加载")
+
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(

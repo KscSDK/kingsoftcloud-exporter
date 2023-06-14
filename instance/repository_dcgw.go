@@ -44,6 +44,7 @@ func (repo *InstanceDCGWRepository) ListByMonitors(filters map[string]interface{
 
 	var totalCount int64 = -1
 
+	level.Info(repo.logger).Log("msg", "DC_GW 资源开始加载")
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
@@ -81,7 +82,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "NAT 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "DC_GW 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
@@ -98,7 +99,7 @@ func (repo *InstanceDCGWRepository) ListByFilters(filters map[string]interface{}
 
 	var maxResults int64 = 300
 
-	level.Info(repo.logger).Log("msg", "DCGW 资源开始加载")
+	level.Info(repo.logger).Log("msg", "DC_GW 资源开始加载")
 
 getMoreInstances:
 
@@ -140,7 +141,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "DCGW 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "DC_GW 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

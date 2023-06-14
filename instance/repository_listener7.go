@@ -182,7 +182,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "LISTENER7 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "LISTENER7 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

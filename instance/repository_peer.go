@@ -45,6 +45,8 @@ func (repo *InstancePEERRepository) ListByMonitors(filters map[string]interface{
 
 	var totalCount int64 = -1
 
+	level.Info(repo.logger).Log("msg", "PEER 资源开始加载")
+
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
@@ -82,7 +84,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "PEER 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "PEER 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
@@ -98,7 +100,7 @@ func (repo *InstancePEERRepository) ListByFilters(filters map[string]interface{}
 
 	var maxResults int64 = 10
 
-	level.Info(repo.logger).Log("msg", "Peering 资源开始加载")
+	level.Info(repo.logger).Log("msg", "PEER 资源开始加载")
 
 	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
 		for i := 0; i < len(iam.IAMProjectIDs); i++ {
@@ -141,7 +143,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "Peering 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "PEER 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

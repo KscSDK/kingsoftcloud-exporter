@@ -51,6 +51,8 @@ func (repo *InstanceSLBRepository) ListByMonitors(filters map[string]interface{}
 		}
 	}
 
+	level.Info(repo.logger).Log("msg", "SLB 资源开始加载")
+
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
@@ -89,7 +91,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "SLB 资源加载完毕", "instance_count", len(instances))
+	level.Info(repo.logger).Log("msg", "SLB 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
@@ -155,7 +157,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "SLB 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "SLB 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

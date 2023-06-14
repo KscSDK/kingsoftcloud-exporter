@@ -45,6 +45,8 @@ func (repo *InstanceKECRepository) ListByMonitors(filters map[string]interface{}
 
 	var totalCount int64 = -1
 
+	level.Info(repo.logger).Log("msg", "KEC 资源开始加载")
+
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
@@ -84,7 +86,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "KEC资源加载完毕")
+	level.Info(repo.logger).Log("msg", "KEC 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
@@ -111,7 +113,7 @@ func (repo *InstanceKECRepository) ListByFilters(filters map[string]interface{})
 		}
 	}
 
-	level.Info(repo.logger).Log("msg", "KEC资源开始加载")
+	level.Info(repo.logger).Log("msg", "KEC 资源开始加载")
 
 getMoreInstances:
 
@@ -152,7 +154,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "KEC资源加载完毕")
+	level.Info(repo.logger).Log("msg", "KEC 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

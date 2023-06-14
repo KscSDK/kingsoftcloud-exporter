@@ -81,7 +81,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "BWS 资源加载完毕", "instance_count", len(instances))
+	level.Info(repo.logger).Log("msg", "BWS 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

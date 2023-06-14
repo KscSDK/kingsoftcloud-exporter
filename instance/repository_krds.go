@@ -43,6 +43,8 @@ func (repo *InstanceRDSRepository) ListByMonitors(filters map[string]interface{}
 
 	var totalCount int64 = -1
 
+	level.Info(repo.logger).Log("msg", "RDS 资源开始加载")
+
 getMoreInstances:
 
 	l, count, err := DescribeMonitorInstances(
@@ -82,7 +84,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "KRDS 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "RDS 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
@@ -148,7 +150,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "RDS 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "RDS 资源加载完毕", "instance_num", len(instances))
 
 	return
 }

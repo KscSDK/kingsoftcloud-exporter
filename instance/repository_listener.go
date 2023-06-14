@@ -81,7 +81,7 @@ getMoreTCPInstances:
 		goto getMoreTCPInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "TCP 资源加载完毕", "instances_num", len(instances))
+	level.Info(repo.logger).Log("msg", "TCP 资源加载完毕", "instance_num", len(instances))
 
 	marker = 1
 
@@ -126,7 +126,7 @@ getMoreUDPInstances:
 		goto getMoreUDPInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "UDP 资源加载完毕", "instances_num", len(instances))
+	level.Info(repo.logger).Log("msg", "UDP 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
@@ -187,7 +187,7 @@ getMoreInstances:
 		goto getMoreInstances
 	}
 
-	level.Info(repo.logger).Log("msg", "LISTENER 资源加载完毕")
+	level.Info(repo.logger).Log("msg", "LISTENER 资源加载完毕", "instance_num", len(instances))
 
 	return
 }
