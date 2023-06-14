@@ -134,7 +134,7 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 		}
 
 		if metricName == "disk.write.ops" {
-			metricReName = "disk.read.ops"
+			metricReName = "disk.write.ops"
 			*m.MetricDesc = "磁盘每秒写次数盘符"
 			*m.Unit = "Ops"
 		}
