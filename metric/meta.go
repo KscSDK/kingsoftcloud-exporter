@@ -133,6 +133,18 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 			}
 		}
 
+		if metricName == "disk.read.ops" {
+			metricReName = "disk.read.ops"
+			*m.MetricDesc = "磁盘每秒读次数盘符"
+			*m.Unit = "Ops"
+		}
+
+		if metricName == "disk.io.error" {
+			metricReName = "disk.io.error"
+			*m.MetricDesc = "disk.io.error"
+			*m.Unit = "个"
+		}
+
 		if *m.MetricName == "vm.memory.size[total]" {
 			metricReName = "vm.memory.total.size"
 			*m.MetricDesc = "总内存"
