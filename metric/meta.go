@@ -108,6 +108,18 @@ func NewMultiDimensionMeta(conf *config.KscExporterConfig, m *MetricSet) (*Meta,
 				}
 			}
 
+			if metricName == "net.if.in_pps" && len(dimensionValues) == 1 {
+				metricReName = "net.if.in.pps"
+				*m.MetricDesc = "网卡入包数"
+				*m.Unit = "pps"
+			}
+
+			if metricName == "net.if.out_pps" && len(dimensionValues) == 1 {
+				metricReName = "net.if.out.pps"
+				*m.MetricDesc = "网卡入包数"
+				*m.Unit = "pps"
+			}
+
 			if metricName == "net.if.in" && len(dimensionValues) >= 2 {
 				metricReName = "net.if.in.pps"
 				*m.MetricDesc = "网卡入包数"
