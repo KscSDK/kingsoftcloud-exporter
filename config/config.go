@@ -23,7 +23,7 @@ const (
 
 	DefaultSupportInstances = 100
 
-	DefaultSupportProducts = 10
+	DefaultSupportProducts = 5
 
 	ENV_AccessKey   = "KS_CLOUD_SECRET_ID"
 	ENV_SecretKey   = "KS_CLOUD_SECRET_KEY"
