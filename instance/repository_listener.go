@@ -25,6 +25,10 @@ type InstanceListenerRepository struct {
 	logger     log.Logger
 }
 
+func (repo *InstanceListenerRepository) GetNamespace() string {
+	return "LISTENER"
+}
+
 func (repo *InstanceListenerRepository) GetInstanceKey() string {
 	return "LISTENER"
 }

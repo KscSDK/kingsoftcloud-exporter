@@ -25,6 +25,10 @@ type InstanceDCGWRepository struct {
 	logger     log.Logger
 }
 
+func (repo *InstanceDCGWRepository) GetNamespace() string {
+	return "DCGW"
+}
+
 func (repo *InstanceDCGWRepository) GetInstanceKey() string {
 	return "DCGW"
 }

@@ -25,6 +25,10 @@ type InstanceBWSRepository struct {
 	logger     log.Logger
 }
 
+func (repo *InstanceBWSRepository) GetNamespace() string {
+	return "BWS"
+}
+
 func (repo *InstanceBWSRepository) GetInstanceKey() string {
 	return "BWS"
 }
@@ -98,9 +102,16 @@ func (repo *InstanceBWSRepository) ListByFilters(filters map[string]interface{})
 
 	level.Info(repo.logger).Log("msg", "BWS 资源开始加载")
 
-	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
-		for i := 0; i < len(iam.IAMProjectIDs); i++ {
-			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+	namespace := repo.GetNamespace()
+	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK {
+		for i := 0; i < len(iam.OnlyIncludeProjectIDs[namespace]); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.OnlyIncludeProjectIDs[namespace][i]
+		}
+	} else {
+		if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+			for i := 0; i < len(iam.IAMProjectIDs); i++ {
+				filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+			}
 		}
 	}
 

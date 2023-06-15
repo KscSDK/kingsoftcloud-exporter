@@ -3,8 +3,11 @@ package instance
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	kcsv1 "github.com/KscSDK/ksc-sdk-go/service/kcsv1"
@@ -22,6 +25,10 @@ type InstanceKCSRepository struct {
 	credential config.Credential
 	client     *kcsv1.Kcsv1
 	logger     log.Logger
+}
+
+func (repo *InstanceKCSRepository) GetNamespace() string {
+	return "KCS"
 }
 
 func (repo *InstanceKCSRepository) GetInstanceKey() string {
@@ -108,6 +115,15 @@ func (repo *InstanceKCSRepository) ListByFilters(filters map[string]interface{})
 	var maxResults int64 = 100
 
 	var totalCount int64 = -1
+
+	namespace := repo.GetNamespace()
+	if len(iam.OnlyIncludeProjectIDs[namespace]) > 0 {
+		projectIDs := make([]string, 0, len(iam.OnlyIncludeProjectIDs[namespace]))
+		for _, v := range iam.OnlyIncludeProjectIDs[namespace] {
+			projectIDs = append(projectIDs, strconv.FormatInt(v, 10))
+		}
+		filters["IamProjectId"] = strings.Join(projectIDs, ",")
+	}
 
 	level.Info(repo.logger).Log("msg", "KCS 资源开始加载")
 

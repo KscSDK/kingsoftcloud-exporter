@@ -26,8 +26,12 @@ type InstanceSLBRepository struct {
 	logger     log.Logger
 }
 
+func (repo *InstanceSLBRepository) GetNamespace() string {
+	return "SLB"
+}
+
 func (repo *InstanceSLBRepository) GetInstanceKey() string {
-	return "KRDS"
+	return "SLB"
 }
 
 func (repo *InstanceSLBRepository) Get(id string) (instance KscInstance, err error) {
@@ -45,12 +49,18 @@ func (repo *InstanceSLBRepository) ListByMonitors(filters map[string]interface{}
 
 	var totalCount int64 = -1
 
-	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
-		for i := 0; i < len(iam.IAMProjectIDs); i++ {
-			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+	namespace := repo.GetNamespace()
+	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK {
+		for i := 0; i < len(iam.OnlyIncludeProjectIDs[namespace]); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.OnlyIncludeProjectIDs[namespace][i]
+		}
+	} else {
+		if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+			for i := 0; i < len(iam.IAMProjectIDs); i++ {
+				filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.IAMProjectIDs[i]
+			}
 		}
 	}
-
 	level.Info(repo.logger).Log("msg", "SLB 资源开始加载")
 
 getMoreInstances:

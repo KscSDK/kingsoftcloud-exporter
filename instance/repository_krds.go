@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/KscSDK/kingsoftcloud-exporter/config"
+	"github.com/KscSDK/kingsoftcloud-exporter/iam"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
@@ -22,6 +23,10 @@ type InstanceRDSRepository struct {
 	credential config.Credential
 	client     *krds.Krds
 	logger     log.Logger
+}
+
+func (repo *InstanceRDSRepository) GetNamespace() string {
+	return "KRDS"
 }
 
 func (repo *InstanceRDSRepository) GetInstanceKey() string {
@@ -108,6 +113,11 @@ func (repo *InstanceRDSRepository) ListByFilters(filters map[string]interface{})
 	var maxResults int64 = 100
 
 	var totalCount int64 = -1
+
+	namespace := repo.GetNamespace()
+	if len(iam.OnlyIncludeProjectIDs[namespace]) > 0 {
+		filters["ProjectId"] = iam.OnlyIncludeProjectIDs[namespace][0]
+	}
 
 	level.Info(repo.logger).Log("msg", "RDS 资源开始加载")
 

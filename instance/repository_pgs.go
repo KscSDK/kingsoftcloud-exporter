@@ -21,6 +21,10 @@ type InstancePGSRepository struct {
 	logger     log.Logger
 }
 
+func (repo *InstancePGSRepository) GetNamespace() string {
+	return "PGS"
+}
+
 func (repo *InstancePGSRepository) GetInstanceKey() string {
 	return "PGS"
 }

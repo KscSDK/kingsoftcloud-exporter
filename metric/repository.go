@@ -64,27 +64,6 @@ type MetricRepositoryImpl struct {
 	logger log.Logger
 }
 
-func GetMetaFromConfig(conf config.KscMetricConfig, instanceId string) (meta *Meta, err error) {
-	interval := strconv.FormatInt(conf.MinPeriodSeconds, 10)
-
-	m := &MetricSet{
-		Namespace:  &conf.Namespace,
-		MetricName: &conf.MetricName,
-		MetricDesc: &conf.MetricDesc,
-		Statistics: &conf.Statistics,
-		InstanceID: &instanceId,
-		Interval:   &interval,
-		Unit:       &conf.Unit,
-	}
-
-	meta, err = NewMeta(m)
-	if err != nil {
-		return
-	}
-
-	return
-}
-
 func (repo *MetricRepositoryImpl) GetMeta(conf config.KscMetricConfig, instanceId string) (meta *Meta, err error) {
 	interval := strconv.FormatInt(conf.MinPeriodSeconds, 10)
 
@@ -107,11 +86,11 @@ func (repo *MetricRepositoryImpl) GetMeta(conf config.KscMetricConfig, instanceI
 }
 
 func (repo *MetricRepositoryImpl) ListLocalMetrics(namespace, instanceId string) ([]*Meta, error) {
-	if _, isExists := config.AllProductMetricsConfig[namespace]; !isExists {
-		return nil, fmt.Errorf(`No support namespace="%+v" product.`, namespace)
-	}
 
-	metricsConf := config.AllProductMetricsConfig[namespace]
+	metricsConf, err := config.GetMetricConfigs(namespace)
+	if err != nil {
+		return nil, err
+	}
 
 	metaSlice := make([]*Meta, 0, len(metricsConf))
 
@@ -147,8 +126,15 @@ func (repo *MetricRepositoryImpl) ListMetrics(namespace, instanceId string) ([]*
 		return nil, err
 	}
 
+	onlyIncludeMetricsMaps := config.GetOnlyIncludeMetrics(namespace)
 	metaSlice := make([]*Meta, 0, len(metricSets))
 	for _, metricSet := range metricSets {
+		filterName := FilterByMetricName(*metricSet.MetricName)
+		if len(onlyIncludeMetricsMaps) > 0 {
+			if _, isOK := onlyIncludeMetricsMaps[filterName]; !isOK {
+				continue
+			}
+		}
 		m, e := NewMultiDimensionMeta(repo.exporterConf, metricSet)
 		if e != nil {
 			return nil, err

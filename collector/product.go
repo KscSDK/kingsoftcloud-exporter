@@ -83,7 +83,8 @@ func (c *KscProductCollector) LoadMetricsByMetricConf() error {
 
 // 产品纬度配置
 func (c *KscProductCollector) LoadMetricsByProductConf() error {
-	fmt.Println(fmt.Sprintf("=====Start Load Namespace: %+v====", c.Namespace))
+
+	level.Info(c.logger).Log("msg", "start load metrics", "Namespace", c.Namespace)
 	if len(c.MetricMap) == 0 {
 		c.MetricMap = make(map[string]*metric.Metric)
 	}
@@ -92,10 +93,18 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 		//TODO:
 	}
 
-	//提前先加载资源
 	instances, err := c.handler.GetInstances()
 	if err != nil {
 		return err
+	}
+
+	if config.IsSupportMultiDimensionNamespace(c.Namespace) {
+		if len(instances) > config.DefaultSupportInstances {
+			return fmt.Errorf("loaded instances_num (%+v > %d) exceeds the maximum load of a single product",
+				len(instances),
+				config.DefaultSupportInstances,
+			)
+		}
 	}
 
 	//云服务产品是否支持多维度监控项
@@ -174,30 +183,6 @@ func (c *KscProductCollector) loadMetrics(instances []instance.KscInstance) erro
 	}
 
 	return nil
-}
-
-func (c *KscProductCollector) getMetricConfigs(productConf config.KscProductConfig) []config.KscMetricConfig {
-
-	// 导出指定指标列表
-	if len(productConf.OnlyIncludeMetrics) != 0 {
-		onlyIncludeMetricsMaps := make(map[string]struct{})
-		for _, v := range productConf.OnlyIncludeMetrics {
-			onlyIncludeMetricsMaps[v] = struct{}{}
-		}
-
-		metricsCount := len(productConf.Metrics)
-		configs := make([]config.KscMetricConfig, 0, metricsCount)
-
-		for i := 0; i < metricsCount; i++ {
-			if _, isExist := onlyIncludeMetricsMaps[productConf.Metrics[i].MetricName]; isExist {
-				configs = append(configs, productConf.Metrics[i])
-			}
-		}
-
-		return configs
-	}
-
-	return productConf.Metrics
 }
 
 func (c *KscProductCollector) createMetricWithMeta(meta *metric.Meta, productConf config.KscProductConfig, instanceId string) (*metric.Metric, error) {

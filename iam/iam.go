@@ -15,6 +15,8 @@ import (
 
 var IAMProjectIDs = []int64{}
 
+var OnlyIncludeProjectIDs = map[string][]int64{}
+
 type ProjectMeta struct {
 	AccountId   string `json:"AccountId"`
 	ProjectId   int64  `json:"ProjectId"`
@@ -73,6 +75,14 @@ func ReloadIAMProjects(conf *config.KscExporterConfig, logger log.Logger) (err e
 	c, err := NewKscIAMClient(conf, logger)
 	if err != nil {
 		return err
+	}
+
+	for i := 0; i < len(conf.Products); i++ {
+		if len(conf.Products[i].OnlyIncludeProjects) > 0 {
+			if _, isOK := OnlyIncludeProjectIDs[conf.Products[i].Namespace]; !isOK {
+				OnlyIncludeProjectIDs[conf.Products[i].Namespace] = conf.Products[i].OnlyIncludeProjects
+			}
+		}
 	}
 
 	IAMProjectIDs, err = c.GetAccountAllProjectList()

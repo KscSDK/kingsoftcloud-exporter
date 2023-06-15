@@ -25,6 +25,10 @@ type InstanceKECRepository struct {
 	logger     log.Logger
 }
 
+func (repo *InstanceKECRepository) GetNamespace() string {
+	return "KEC"
+}
+
 func (repo *InstanceKECRepository) GetInstanceKey() string {
 	return "KEC"
 }
@@ -107,9 +111,16 @@ func (repo *InstanceKECRepository) ListByFilters(filters map[string]interface{})
 
 	var totalCount int64 = -1
 
-	if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
-		for i := 0; i < len(iam.IAMProjectIDs); i++ {
-			filters[fmt.Sprintf("ProjectId.%d", i)] = iam.IAMProjectIDs[i]
+	namespace := repo.GetNamespace()
+	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK {
+		for i := 0; i < len(iam.OnlyIncludeProjectIDs[namespace]); i++ {
+			filters[fmt.Sprintf("ProjectId.%d", i)] = iam.OnlyIncludeProjectIDs[namespace][i]
+		}
+	} else {
+		if len(iam.IAMProjectIDs) > 0 || len(iam.IAMProjectIDs) <= 100 {
+			for i := 0; i < len(iam.IAMProjectIDs); i++ {
+				filters[fmt.Sprintf("ProjectId.%d", i)] = iam.IAMProjectIDs[i]
+			}
 		}
 	}
 

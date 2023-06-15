@@ -19,6 +19,11 @@ const (
 	DefaultRateLimit               = 10
 	DefaultQueryMetricBatchSize    = 2000
 	DefaultKS3QueryMetricBatchSize = 60
+	DefaultMaxAvailableProjects    = 100
+
+	DefaultSupportInstances = 100
+
+	DefaultSupportProducts = 10
 
 	ENV_AccessKey   = "KS_CLOUD_SECRET_ID"
 	ENV_SecretKey   = "KS_CLOUD_SECRET_KEY"
@@ -34,6 +39,8 @@ var (
 	ExporterRunningMode = ""
 
 	DebugNamespaceMetrics = map[string]bool{}
+
+	OnlyIncludeMetrics = map[string][]string{}
 
 	Product2Namespace = map[string]string{
 		"kec":       "KEC",
@@ -122,6 +129,8 @@ type KscProductConfig struct {
 	ExcludeMetrics        []string               `yaml:"exclude_metrics"`
 	InstanceFilters       map[string]interface{} `yaml:"instance_filters"`
 	OnlyIncludeInstances  []string               `yaml:"only_include_instances"`
+	IncludeInstances      map[string]bool        `yaml:"-"`
+	OnlyIncludeProjects   []int64                `yaml:"only_include_projects"`
 	ExcludeInstances      []string               `yaml:"exclude_instances"`
 	CustomQueryDimensions []map[string]string    `yaml:"custom_query_dimensions"`
 	Statistics            []string               `yaml:"statistics_types"`
@@ -243,6 +252,10 @@ func (c *KscExporterConfig) check() (err error) {
 		ExporterRunningMode = ExporterMode_Mock
 	}
 
+	if len(c.Products) > DefaultSupportProducts {
+		return fmt.Errorf("exporter can support up to %d products at the same time.", DefaultSupportProducts)
+	}
+
 	for i := 0; i < len(c.Products); i++ {
 		if _, exists := Product2Namespace[strings.ToLower(c.Products[i].Namespace)]; !exists {
 			return fmt.Errorf("namespace productName not support, %s", c.Products[i].Namespace)
@@ -252,6 +265,22 @@ func (c *KscExporterConfig) check() (err error) {
 			if _, isExists := AllProductMetricsConfig[strings.ToUpper(c.Products[i].Namespace)]; isExists {
 				c.Products[i].Metrics = AllProductMetricsConfig[strings.ToUpper(c.Products[i].Namespace)]
 			}
+		}
+
+		if len(c.Products[i].OnlyIncludeProjects) > DefaultMaxAvailableProjects {
+			return fmt.Errorf("namespace exceeds the maximum number of configurable projects, %s", c.Products[i].Namespace)
+		}
+
+		if len(c.Products[i].OnlyIncludeInstances) > 0 {
+			c.Products[i].IncludeInstances = make(map[string]bool)
+			for _, v := range c.Products[i].OnlyIncludeInstances {
+				c.Products[i].IncludeInstances[v] = true
+			}
+		}
+
+		OnlyIncludeMetrics = make(map[string][]string)
+		if len(c.Products[i].OnlyIncludeMetrics) > 0 {
+			OnlyIncludeMetrics[c.Products[i].Namespace] = c.Products[i].OnlyIncludeMetrics
 		}
 	}
 
@@ -293,19 +322,6 @@ func (c *KscExporterConfig) GetMetricConfigMap(namespace string) map[string]KscM
 	return metricLabelsMap
 }
 
-func (c *KscExporterConfig) GetMetricConfigs(namespace string) (metricConfigs []KscMetricConfig) {
-
-	for i := 0; i < len(c.Products); i++ {
-		for j := 0; j < len(c.Products[i].Metrics); j++ {
-			ns := GetStandardNamespaceFromCustomNamespace(c.Products[i].Metrics[j].Namespace)
-			if ns == namespace {
-				metricConfigs = append(metricConfigs, c.Products[i].Metrics[j])
-			}
-		}
-	}
-	return
-}
-
 func (c *KscExporterConfig) GetProductConfig(namespace string) (KscProductConfig, error) {
 	for _, pconf := range c.Products {
 		ns := GetStandardNamespaceFromCustomNamespace(pconf.Namespace)
@@ -314,6 +330,41 @@ func (c *KscExporterConfig) GetProductConfig(namespace string) (KscProductConfig
 		}
 	}
 	return KscProductConfig{}, fmt.Errorf("namespace config not found")
+}
+
+func GetOnlyIncludeMetrics(namespace string) map[string]struct{} {
+	onlyIncludeMetricsMaps := make(map[string]struct{})
+	if len(OnlyIncludeMetrics[namespace]) != 0 {
+		for _, v := range OnlyIncludeMetrics[namespace] {
+			onlyIncludeMetricsMaps[v] = struct{}{}
+		}
+	}
+	return onlyIncludeMetricsMaps
+}
+
+//GetMetricConfigs
+func GetMetricConfigs(namespace string) ([]KscMetricConfig, error) {
+	if _, isExists := AllProductMetricsConfig[namespace]; !isExists {
+		return nil, fmt.Errorf(`No support namespace="%+v" product.`, namespace)
+	}
+
+	metricsConf := AllProductMetricsConfig[namespace]
+
+	// 导出指定指标列表
+	if len(OnlyIncludeMetrics[namespace]) != 0 {
+		onlyIncludeMetricsMaps := GetOnlyIncludeMetrics(namespace)
+		metricsCount := len(metricsConf)
+		configs := make([]KscMetricConfig, 0, metricsCount)
+		for i := 0; i < metricsCount; i++ {
+			if _, isExist := onlyIncludeMetricsMaps[metricsConf[i].MetricName]; isExist {
+				configs = append(configs, metricsConf[i])
+			}
+		}
+
+		return configs, nil
+	}
+
+	return metricsConf, nil
 }
 
 func GetStandardNamespaceFromCustomNamespace(cns string) string {

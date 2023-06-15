@@ -39,6 +39,15 @@ type baseProductHandler struct {
 	logger          log.Logger
 }
 
+//GetInstancesByUUID
+func (h *baseProductHandler) GetInstancesByUUID(uuids []string) ([]instance.KscInstance, error) {
+	instances, err := h.collector.InstanceRepo.ListByIds(uuids)
+	if err != nil {
+		return nil, err
+	}
+	return instances, nil
+}
+
 //GetInstances
 func (h *baseProductHandler) GetInstances() ([]instance.KscInstance, error) {
 	filters := make(map[string]interface{})
@@ -55,7 +64,19 @@ func (h *baseProductHandler) GetInstances() ([]instance.KscInstance, error) {
 		return nil, err
 	}
 
-	return instances, nil
+	if len(h.collector.ProductConf.OnlyIncludeInstances) <= 0 {
+		return instances, nil
+	}
+
+	includeInstances := make([]instance.KscInstance, 0, len(h.collector.ProductConf.OnlyIncludeInstances))
+	loadInstanceCount := len(instances)
+	for i := 0; i < loadInstanceCount; i++ {
+		if _, isOK := h.collector.ProductConf.IncludeInstances[instances[i].GetInstanceID()]; isOK {
+			includeInstances = append(includeInstances, instances[i])
+		}
+	}
+
+	return includeInstances, nil
 }
 
 //GetSeriesByInstance

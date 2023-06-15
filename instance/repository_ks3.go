@@ -73,6 +73,10 @@ type InstanceKS3Repository struct {
 	logger     log.Logger
 }
 
+func (repo *InstanceKS3Repository) GetNamespace() string {
+	return "KS3"
+}
+
 func (repo *InstanceKS3Repository) GetInstanceKey() string {
 	return "KS3"
 }
