@@ -297,7 +297,7 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 
 	if len(rep.ErrorMessage) > 0 {
 		for _, v := range rep.ErrorMessage {
-			level.Error(repo.logger).Log("msg", v)
+			level.Debug(repo.logger).Log("msg", v)
 		}
 	}
 
@@ -406,7 +406,7 @@ func (repo *MetricRepositoryImpl) DescribeMonitorData(m map[string]*Metric, st i
 
 	if len(rep.ErrorMessage) > 0 {
 		for _, v := range rep.ErrorMessage {
-			level.Error(repo.logger).Log("msg", v)
+			level.Debug(repo.logger).Log("msg", v)
 		}
 	}
 

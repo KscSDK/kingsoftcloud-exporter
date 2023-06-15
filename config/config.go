@@ -176,11 +176,14 @@ func (c *KscExporterConfig) LoadFile(filename string) error {
 		return err
 	}
 
+	OnlyIncludeMetrics = make(map[string][]string)
+
 	if err = c.check(); err != nil {
 		return err
 	}
 
 	c.fillDefault()
+
 	return nil
 }
 
@@ -278,8 +281,8 @@ func (c *KscExporterConfig) check() (err error) {
 			}
 		}
 
-		OnlyIncludeMetrics = make(map[string][]string)
 		if len(c.Products[i].OnlyIncludeMetrics) > 0 {
+
 			OnlyIncludeMetrics[c.Products[i].Namespace] = c.Products[i].OnlyIncludeMetrics
 		}
 	}
