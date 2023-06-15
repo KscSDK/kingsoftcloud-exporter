@@ -98,7 +98,7 @@ type DescribeVpcPeeringConnectionsResponse struct {
 	RequestId               string              `json:"RequestId"`
 }
 
-func (repo *InstancePEERRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstancePEERRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	var nextToken int64 = 1
 
@@ -107,7 +107,7 @@ func (repo *InstancePEERRepository) ListByFilters(filters map[string]interface{}
 	level.Info(repo.logger).Log("msg", "PEER 资源开始加载")
 
 	namespace := repo.GetNamespace()
-	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK {
+	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK && !hasIncludeInstances {
 		for i := 0; i < len(iam.OnlyIncludeProjectIDs[namespace]); i++ {
 			filters[fmt.Sprintf("ProjectId.%d", i+1)] = iam.OnlyIncludeProjectIDs[namespace][i]
 		}

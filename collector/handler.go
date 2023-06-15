@@ -57,7 +57,11 @@ func (h *baseProductHandler) GetInstances() ([]instance.KscInstance, error) {
 	if config.ExporterRunningMode == config.ExporterMode_Mock {
 		instances, err = h.collector.InstanceRepo.ListByMonitors(filters)
 	} else {
-		instances, err = h.collector.InstanceRepo.ListByFilters(filters)
+		hasIncludeInstances := false
+		if len(h.collector.ProductConf.OnlyIncludeInstances) > 0 {
+			hasIncludeInstances = true
+		}
+		instances, err = h.collector.InstanceRepo.ListByFilters(filters, hasIncludeInstances)
 	}
 
 	if err != nil {
@@ -117,7 +121,11 @@ func (h *baseProductHandler) GetSeriesByAll(m *metric.Metric) ([]*metric.Series,
 	if config.ExporterRunningMode == config.ExporterMode_Mock {
 		instances, err = h.collector.InstanceRepo.ListByMonitors(m.Conf.InstanceFilters)
 	} else {
-		instances, err = h.collector.InstanceRepo.ListByFilters(m.Conf.InstanceFilters)
+		hasIncludeInstances := false
+		if len(h.collector.ProductConf.OnlyIncludeInstances) > 0 {
+			hasIncludeInstances = true
+		}
+		instances, err = h.collector.InstanceRepo.ListByFilters(m.Conf.InstanceFilters, hasIncludeInstances)
 	}
 	if err != nil {
 		return nil, err

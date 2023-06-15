@@ -42,7 +42,7 @@ func (c *InstanceCache) Get(id string) (KscInstance, error) {
 
 //ListByIds
 func (c *InstanceCache) ListByIds(ids []string) (instances []KscInstance, err error) {
-	err = c.checkNeedReload()
+	err = c.checkNeedReload(false)
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +59,8 @@ func (c *InstanceCache) ListByIds(ids []string) (instances []KscInstance, err er
 	return
 }
 
-func (c *InstanceCache) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
-	err = c.checkNeedReload()
+func (c *InstanceCache) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
+	err = c.checkNeedReload(hasIncludeInstances)
 	if err != nil {
 		return
 	}
@@ -82,7 +82,7 @@ func (c *InstanceCache) ListByFilters(filters map[string]interface{}) (instances
 }
 
 func (c *InstanceCache) ListByMonitors(filters map[string]interface{}) (instances []KscInstance, err error) {
-	err = c.checkNeedReload()
+	err = c.checkNeedReload(false)
 	if err != nil {
 		return
 	}
@@ -104,7 +104,7 @@ func (c *InstanceCache) ListByMonitors(filters map[string]interface{}) (instance
 }
 
 //checkNeedReload
-func (c *InstanceCache) checkNeedReload() error {
+func (c *InstanceCache) checkNeedReload(hasIncludeInstances bool) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -117,7 +117,7 @@ func (c *InstanceCache) checkNeedReload() error {
 	if config.ExporterRunningMode == config.ExporterMode_Mock {
 		instances, err = c.Raw.ListByMonitors(map[string]interface{}{})
 	} else {
-		instances, err = c.Raw.ListByFilters(map[string]interface{}{})
+		instances, err = c.Raw.ListByFilters(map[string]interface{}{}, hasIncludeInstances)
 	}
 
 	if err != nil {

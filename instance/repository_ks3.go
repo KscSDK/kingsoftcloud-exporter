@@ -97,7 +97,7 @@ type ListBucketsResponse struct {
 	Buckets []*InstancesKS3BucketMeta
 }
 
-func (repo *InstanceKS3Repository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceKS3Repository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	level.Info(repo.logger).Log("msg", "KS3 Buckets 资源开始加载")
 

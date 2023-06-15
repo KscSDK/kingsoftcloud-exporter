@@ -88,7 +88,7 @@ getMoreInstances:
 	return
 }
 
-func (repo *InstancePGSRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstancePGSRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 	return
 }
 

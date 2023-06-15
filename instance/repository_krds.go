@@ -106,7 +106,7 @@ type DescribeRdsResponse struct {
 	RequestId string      `json:"RequestId"`
 }
 
-func (repo *InstanceRDSRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceRDSRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	var marker int64 = 0
 
@@ -115,7 +115,7 @@ func (repo *InstanceRDSRepository) ListByFilters(filters map[string]interface{})
 	var totalCount int64 = -1
 
 	namespace := repo.GetNamespace()
-	if len(iam.OnlyIncludeProjectIDs[namespace]) > 0 {
+	if len(iam.OnlyIncludeProjectIDs[namespace]) > 0 && !hasIncludeInstances {
 		filters["ProjectId"] = iam.OnlyIncludeProjectIDs[namespace][0]
 	}
 

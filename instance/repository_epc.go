@@ -102,7 +102,7 @@ type DescribeEPCsResponse struct {
 	RequestId  string             `json:"RequestId"`
 }
 
-func (repo *InstanceEPCRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceEPCRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	var nextToken int64 = 0
 
@@ -111,7 +111,7 @@ func (repo *InstanceEPCRepository) ListByFilters(filters map[string]interface{})
 	level.Info(repo.logger).Log("msg", "EPC 资源开始加载")
 
 	namespace := repo.GetNamespace()
-	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK {
+	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK && !hasIncludeInstances {
 		for i := 0; i < len(iam.OnlyIncludeProjectIDs[namespace]); i++ {
 			filters[fmt.Sprintf("ProjectId.%d", i)] = iam.OnlyIncludeProjectIDs[namespace][i]
 		}

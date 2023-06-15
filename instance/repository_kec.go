@@ -103,7 +103,7 @@ type DescribeInstancesResponse struct {
 }
 
 //ListByFilters
-func (repo *InstanceKECRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceKECRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	var marker int64 = 0
 
@@ -112,7 +112,7 @@ func (repo *InstanceKECRepository) ListByFilters(filters map[string]interface{})
 	var totalCount int64 = -1
 
 	namespace := repo.GetNamespace()
-	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK {
+	if _, isOK := iam.OnlyIncludeProjectIDs[namespace]; isOK && !hasIncludeInstances {
 		for i := 0; i < len(iam.OnlyIncludeProjectIDs[namespace]); i++ {
 			filters[fmt.Sprintf("ProjectId.%d", i)] = iam.OnlyIncludeProjectIDs[namespace][i]
 		}

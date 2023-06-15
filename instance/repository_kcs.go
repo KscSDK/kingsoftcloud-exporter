@@ -108,7 +108,7 @@ type DescribeCacheClustersResponse struct {
 	RequestId string         `json:"RequestId"`
 }
 
-func (repo *InstanceKCSRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceKCSRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	var marker int64 = 0
 
@@ -117,7 +117,7 @@ func (repo *InstanceKCSRepository) ListByFilters(filters map[string]interface{})
 	var totalCount int64 = -1
 
 	namespace := repo.GetNamespace()
-	if len(iam.OnlyIncludeProjectIDs[namespace]) > 0 {
+	if len(iam.OnlyIncludeProjectIDs[namespace]) > 0 && !hasIncludeInstances {
 		projectIDs := make([]string, 0, len(iam.OnlyIncludeProjectIDs[namespace]))
 		for _, v := range iam.OnlyIncludeProjectIDs[namespace] {
 			projectIDs = append(projectIDs, strconv.FormatInt(v, 10))

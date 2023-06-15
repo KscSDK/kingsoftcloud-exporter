@@ -32,7 +32,7 @@ type InstanceRepository interface {
 	ListByIds(ids []string) ([]KscInstance, error)
 
 	// 根据filters, 获取符合条件的所有实例对象
-	ListByFilters(filters map[string]interface{}) ([]KscInstance, error)
+	ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) ([]KscInstance, error)
 
 	ListByMonitors(filters map[string]interface{}) ([]KscInstance, error)
 }

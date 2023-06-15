@@ -97,7 +97,7 @@ type DescribeDirectConnectGatewaysResponse struct {
 	RequestId               string              `json:"RequestId"`
 }
 
-func (repo *InstanceDCGWRepository) ListByFilters(filters map[string]interface{}) (instances []KscInstance, err error) {
+func (repo *InstanceDCGWRepository) ListByFilters(filters map[string]interface{}, hasIncludeInstances bool) (instances []KscInstance, err error) {
 
 	var nextToken int64 = 1
 

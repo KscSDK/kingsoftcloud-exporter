@@ -186,7 +186,6 @@ func (c *KscProductCollector) loadMetrics(instances []instance.KscInstance) erro
 }
 
 func (c *KscProductCollector) createMetricWithMeta(meta *metric.Meta, productConf config.KscProductConfig, instanceId string) (*metric.Metric, error) {
-
 	c.lock.RLock()
 	key := fmt.Sprintf("%s.%s", meta.MetricName, instanceId)
 	// m, exists := c.MetricMap[meta.MetricName]
@@ -311,10 +310,6 @@ func NewKscProductCollector(
 	if err := c.LoadMetricsByProductConf(); err != nil {
 		return nil, err
 	}
-
-	// if err = c.initQueries(); err != nil {
-	// 	return nil, err
-	// }
 
 	return c, nil
 }
