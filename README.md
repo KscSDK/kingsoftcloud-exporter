@@ -21,7 +21,8 @@ NAT    | NAT |[指标详情](https://docs.ksyun.com/documents/26#three)
 `后续会有更多的产品支持`
 
 **监控项说明:**
-- KEC
+
+- 云服务器（KEC）监控项
   - 网卡入包速率 (`net.if.in[eth0,packets]`)，监控项转为 (`net.if.in.pps`)
   - 网卡出包速率 (`net.if.out[eth0,packets]`), 监控项转为 (`net.if.out.pps`)
 
