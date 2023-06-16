@@ -157,6 +157,7 @@ getMoreInstances:
 			level.Error(repo.logger).Log("msg", "Create kec instance fail", "id", v.InstanceId)
 			continue
 		}
+		level.Info(repo.logger).Log("uuid", v.InstanceId)
 		instances = append(instances, instance)
 	}
 
