@@ -6,6 +6,7 @@
 产品     | 命名空间 |支持的指标|
 --------|---------|----------
 云服务器 | KEC |[指标详情](https://docs.ksyun.com/documents/26#one)
+裸金属服务器 | EPC |[指标详情](https://docs.ksyun.com/documents/26#ten)
 弹性IP  | EIP |[指标详情](https://docs.ksyun.com/documents/26#two)
 NAT    | NAT |[指标详情](https://docs.ksyun.com/documents/26#three)
 负载均衡 | SLB |[指标详情](https://docs.ksyun.com/documents/26#six)
@@ -23,10 +24,19 @@ NAT    | NAT |[指标详情](https://docs.ksyun.com/documents/26#three)
 
 ### 1.构建
 
+1.使用 `make` 方式：
 ```shell
-git clone https://github.com/KscSDK/kingsoftcloud-exporter.git
+$ git clone https://github.com/KscSDK/kingsoftcloud-exporter.git
 
-go build cmd/ksc-exporter/ksc_exporter.go
+$ make
+```
+
+
+2.使用 `go build` 方式构建：（`go version 1.18+`）
+```shell
+$ git clone https://github.com/KscSDK/kingsoftcloud-exporter.git
+
+$ go build cmd/ksc-exporter/ksc_exporter.go
 ```
 
 或从release列表获取预编译的二进制。
@@ -60,7 +70,7 @@ product_conf:
       - system.cpu.load
       - net.if.out
     only_include_projects: [104139]                // 可选, 只导出该项目制下的资源
-    only_include_instances:                        // 可选, 只导出该项目制下的资源，当配置时 `only_include_projects` 失效
+    only_include_instances:                        // 可选, 只导出指定实例的监控，当配置时 `only_include_projects` 失效
       - "1b4aaa4d-1381-4f34-b312-ed353c6b45d9"
       - "470d384e-9df9-4b63-aa22-f60bc97e6502"
     reload_interval_minutes: 60                    // 可选, 周期reload实例列表, 建议频率不要太频繁
@@ -70,10 +80,10 @@ product_conf:
 **特殊说明:**
 
 1. **product_conf**
-   单个 **`Exporter`** 程序一次最多可配置5个产品线。
+   单个 **`Exporter`** 程序一次最多可配置4个产品线。
 
 2. **实例加载**
-   当配置 `namespace` = `KEC` 或者 `EPC` 产品线时，需要注意由于单个实例资源产品监控项过多的而造成的请求过大，目前对这两个产品线的实例资源进行了相应的限制，单个 **`Exporter`** 一个产品最多加载100个实例数。
+   当配置 `namespace` = `KEC` 或者 `EPC` 产品线时，需要注意由于单个实例资源产品监控项过多的而造成的请求过大，目前对这两个产品线的实例资源进行了相应的限制，单个 **`Exporter`** 一个产品最多加载前100个实例资源。
 
 
 3. **only_include_projects**  
