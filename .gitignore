@@ -6,7 +6,7 @@
 *.test
 *.out
 build/*
-exporter.yml
+./exporter.yml
 .DS_Store
 *mock.go
 /bin
