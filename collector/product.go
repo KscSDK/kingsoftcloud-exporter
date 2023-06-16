@@ -100,10 +100,17 @@ func (c *KscProductCollector) LoadMetricsByProductConf() error {
 
 	if config.IsSupportMultiDimensionNamespace(c.Namespace) {
 		if len(instances) > config.DefaultSupportInstances {
-			return fmt.Errorf("loaded instances_num (%+v > %d) exceeds the maximum load of a single product",
-				len(instances),
+
+			level.Warn(c.logger).Log(
+				"msg",
+				"loaded instances exceeds the maximum load of a single product",
+				"Namespace",
+				c.Namespace,
+				"only_load_instances",
 				config.DefaultSupportInstances,
 			)
+
+			instances = instances[:config.DefaultSupportInstances]
 		}
 	}
 
