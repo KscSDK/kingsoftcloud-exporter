@@ -167,6 +167,18 @@ getMoreInstances:
 
 	level.Info(repo.logger).Log("msg", "KEC 资源加载完毕", "instance_num", len(instances))
 
+	if len(instances) > config.DefaultSupportInstances {
+		level.Warn(repo.logger).Log(
+			"msg",
+			"loaded instances exceeds the maximum load of a single product",
+			"Namespace",
+			"KEC",
+			"only_load_instances",
+			config.DefaultSupportInstances,
+		)
+		instances = instances[:config.DefaultSupportInstances]
+	}
+
 	return
 }
 
