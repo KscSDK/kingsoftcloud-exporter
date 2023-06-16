@@ -25,6 +25,7 @@ NAT    | NAT |[指标详情](https://docs.ksyun.com/documents/26#three)
 
 ```shell
 git clone https://github.com/KscSDK/kingsoftcloud-exporter.git
+
 go build cmd/ksc-exporter/ksc_exporter.go
 ```
 
@@ -69,18 +70,20 @@ product_conf:
 **特殊说明:**
 
 1. **product_conf**
-   - 单个 **`Exporter`** 程序一次最多可配置5个产品线。
+   单个 **`Exporter`** 程序一次最多可配置5个产品线。
 
 2. **实例加载**
-   - 当配置 `namespace` = `KEC` 或者 `EPC` 产品线时，需要注意由于单个实例资源产品监控项过多的而造成的请求过大，目前对这两个产品线的实例资源进行了相应的限制，单个 **`Exporter`** 一个产品最多加载100个实例数。
+   当配置 `namespace` = `KEC` 或者 `EPC` 产品线时，需要注意由于单个实例资源产品监控项过多的而造成的请求过大，目前对这两个产品线的实例资源进行了相应的限制，单个 **`Exporter`** 一个产品最多加载100个实例数。
    
    > 如果拥有大量资源的情况，可将资源分配到不同项目中，通过 
 
 
 3. **only_include_projects**  
-   - 导出指定项目制下的关联的产品资源列表，可以通过登录[资源管理控制台](https://uc.console.ksyun.com/pro/resourcemanager/#/directory/resource/summary) 操作项目制资源，具体操作可以参考[项目管理文档](<https://docs.ksyun.com/documents/2347>);
-   - 当一个产品下配置了 `only_include_instances`，那么 `only_include_projects` 参数则失效，**`Exporter`** 会按照指定的实例维度进行查询;
-   - 当配置了以下几个产品线时，需要注意：
+   导出指定项目制下的关联的产品资源列表，可以通过登录[资源管理控制台](https://uc.console.ksyun.com/pro/resourcemanager/#/directory/resource/summary) 操作项目制资源，具体操作可以参考[项目管理文档](<https://docs.ksyun.com/documents/2347>);
+   
+   当一个产品下配置了 `only_include_instances`，那么 `only_include_projects` 参数则失效，**`Exporter`** 会按照指定的实例维度进行查询;
+   
+   当配置了以下几个产品线时，需要注意：
       - KRDS: `only_include_projects` 只支持配置一个目制ID，不支持同时配置多个项目制ID
       - LISTENER:  <font color="red">该参数不生效</font>
       - LISTENER7: <font color="red">该参数不生效</font>
