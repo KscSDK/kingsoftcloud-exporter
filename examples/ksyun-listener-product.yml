@@ -7,9 +7,9 @@ credential:
 
 # 整个产品纬度配置, 每个产品一个item
 product_conf:
-  - namespace: EIP # 必须, 产品命名空间
+  - namespace: LISTENER # 必须, 产品命名空间
     only_include_metrics: # 可选，只导出指标列表
-      - eip.bps.in
+      - listener.bps.in
     only_include_projects: [0] # 可选, 只导出该项目制下的资源
     only_include_instances: # 可选, 只导出该项目制下的资源，当配置时 `only_include_projects` 失效
       - "xxx"
