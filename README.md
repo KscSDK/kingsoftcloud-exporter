@@ -70,7 +70,7 @@ credential:
 
 // 整个产品纬度配置, 每个产品一个item
 // 特别注意： 如果产品下有大量实例资源，不建议一次配置多个产品线
-//          目前限制一个Expoter最多配置三个产品
+//          目前限制一个Exporter最多配置4个产品
 product_conf:
   - namespace: KEC
     only_include_metrics:                          // 可选, 只导出这些指标
@@ -103,15 +103,7 @@ product_conf:
       - LISTENER:  <font color="red">该参数不生效</font>
       - LISTENER7: <font color="red">该参数不生效</font>
 
-4. **credential**  
-   SecretId、SecretKey、Region可由环境变量获取
-  ```bash
-  export TENCENTCLOUD_SECRET_ID="YOUR_ACCESS_KEY"
-  export TENCENTCLOUD_SECRET_KEY="YOUR_ACCESS_SECRET"
-  export TENCENTCLOUD_REGION="REGION"
-  ```
-
-5. **region**  
+4. **region**  
    配置 `Region` 可选值参考 [地域可选值](https://docs.ksyun.com/documents/6477)
 
 
