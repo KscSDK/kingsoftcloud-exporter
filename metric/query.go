@@ -30,7 +30,7 @@ func (q *Query) GetPromMetrics() (pms []prometheus.Metric, err error) {
 	return
 }
 
-func GetPromMetricsByQueries(queries []*Query, logger log.Logger) (pms []prometheus.Metric, err error) {
+func GetPromMetricsByQueries(namespace string, queries []*Query, period int64, logger log.Logger) (pms []prometheus.Metric, err error) {
 	if len(queries) <= 0 {
 		return pms, fmt.Errorf("queries is empty")
 	}
@@ -40,7 +40,7 @@ func GetPromMetricsByQueries(queries []*Query, logger log.Logger) (pms []prometh
 		queryMetrics[queries[i].Metric.Id] = queries[i].Metric
 	}
 
-	pms, err = GetLatestPromMetrics(queries[0].repo, queryMetrics, logger)
+	pms, err = GetLatestPromMetrics(namespace, queries[0].repo, queryMetrics, period, logger)
 	if err != nil {
 		return
 	}

@@ -51,7 +51,7 @@ func NewMetricConfigWithMetricYaml(c config.KscMetricConfig, meta *Meta) (*Metri
 	// if err != nil {
 	// 	return nil, err
 	// }
-	var period int64 = 60
+	period := int64(config.DefaultPeriodSeconds)
 	conf.StatPeriodSeconds = period
 	conf.StatNumSamples = (c.RangeSeconds / period) + 1
 	// 至少采集4个点的数据
@@ -92,7 +92,7 @@ func NewMetricConfigWithProductYaml(c config.KscProductConfig, meta *Meta) (*Met
 	// if err != nil {
 	// 	return nil, err
 	// }
-	var period int64 = 60
+	period := int64(config.DefaultPeriodSeconds)
 	conf.StatPeriodSeconds = period
 	conf.StatNumSamples = (c.RangeSeconds / period) + 1
 	if conf.StatNumSamples < 4 {

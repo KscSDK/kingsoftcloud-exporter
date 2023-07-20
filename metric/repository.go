@@ -18,6 +18,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/monitor"
 	v2 "github.com/KscSDK/ksc-sdk-go/service/monitorv2"
 	v3 "github.com/KscSDK/ksc-sdk-go/service/monitorv3"
+	v5 "github.com/KscSDK/ksc-sdk-go/service/monitorv5"
 	"github.com/google/uuid"
 
 	"github.com/go-kit/log"
@@ -37,12 +38,12 @@ type MetricRepository interface {
 	GetMeta(conf config.KscMetricConfig, instanceId string) (*Meta, error)
 
 	// 按时间范围批量获取数据点
-	ListBatchSamples(metric map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error)
+	ListBatchSamples(namespace string, metric map[string]*Metric, period int64, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error)
 
 	// 按时间范围获取单个指标下所有时间线的数据点
 	ListSamples(metric *Metric, startTime int64, endTime int64) (samplesList []*Samples, err error)
 
-	DescribeMonitorData(metric map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error)
+	DescribeMonitorData(namespace string, metric map[string]*Metric, period int64, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error)
 }
 
 //MetricRepositoryImpl
@@ -54,6 +55,8 @@ type MetricRepositoryImpl struct {
 	monitorClientV2 *v2.Monitorv2
 
 	monitorClientV3 *v3.Monitorv3
+
+	monitorClientV5 *v5.Monitorv5
 
 	limiter *rate.Limiter // 限速
 
@@ -169,7 +172,14 @@ func (repo *MetricRepositoryImpl) listMetricsRequest(namespace, instanceId strin
 	requestParams["InstanceID"] = instanceId
 	requestParams["PageIndex"] = "1"
 
-	resp, err := repo.monitorClient.ListMetrics(&requestParams)
+	var resp *map[string]interface{}
+	var err error
+	if namespace == "KCM" {
+		resp, err = repo.monitorClientV5.ListMetrics(&requestParams)
+	} else {
+		resp, err = repo.monitorClient.ListMetrics(&requestParams)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -226,10 +236,12 @@ func (repo *MetricRepositoryImpl) describeMetricsMetaRequest(namespace, instance
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(string(body))
@@ -251,8 +263,8 @@ func (repo *MetricRepositoryImpl) ListSamples(m *Metric, st int64, et int64) ([]
 	return nil, nil
 }
 
-func (repo *MetricRepositoryImpl) ListBatchSamples(m map[string]*Metric, st int64, et int64) (map[string][]*Samples, error) {
-	return repo.getMetricStatisticsBatch(m, st, et)
+func (repo *MetricRepositoryImpl) ListBatchSamples(namespace string, m map[string]*Metric, period int64, st int64, et int64) (map[string][]*Samples, error) {
+	return repo.getMetricStatisticsBatch(namespace, m, period, st, et)
 }
 
 func (repo *MetricRepositoryImpl) GetMetricStatisticsBatchRequest(m map[string]*Metric,
@@ -264,7 +276,9 @@ func (repo *MetricRepositoryImpl) GetMetricStatisticsBatchRequest(m map[string]*
 
 //GetMetricStatisticsBatch
 func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
+	namespace string,
 	ms map[string]*Metric,
+	period int64,
 	st int64,
 	et int64,
 ) (map[string][]*Samples, error) {
@@ -277,35 +291,45 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 		return nil, err
 	}
 
-	requestParams := repo.buildGetMonitorRequest(ms, st, et)
+	requestParams := repo.buildGetMonitorRequest(ms, period, st, et)
 
-	start := time.Now()
-	resp, err := repo.monitorClientV2.GetMetricStatisticsBatch(&requestParams)
-	if err != nil {
-		level.Error(repo.logger).Log("request start time ", requestParams["StartTime"], "duration ", time.Since(start).Seconds(), "err ", err.Error())
-		return nil, err
-	}
-	if resp == nil {
-		return nil, fmt.Errorf("get monitor data is empty")
-	}
+	var dataPoints []*DataPoint
+	if namespace == "KCM" {
+		resp, err := repo.getMetricStatisticsBatchV5(requestParams)
+		if err != nil {
+			return nil, err
+		}
 
-	respBytes, _ := json.Marshal(&resp)
-	var rep GetMetricStatisticsBatchResponse
-	if err := json.Unmarshal(respBytes, &rep); err != nil {
-		return nil, err
-	}
+		for _, result := range resp.GetMetricStatisticsBatchResults {
+			for _, point := range result.Points {
+				dataPoints = append(dataPoints, &DataPoint{
+					InstanceId: result.Instance,
+					MetricName: result.MetricName,
+					Points:     point.Values,
+					Dimensions: point.Dimensions,
+				})
+			}
+		}
+	} else {
+		resp, err := repo.getMetricStatisticsBatchV2(requestParams)
+		if err != nil {
+			return nil, err
+		}
 
-	if len(rep.ErrorMessage) > 0 {
-		for _, v := range rep.ErrorMessage {
-			level.Debug(repo.logger).Log("msg", v)
+		for _, point := range resp.Result {
+			dataPoints = append(dataPoints, &DataPoint{
+				InstanceId: point.InstanceId,
+				MetricName: point.Label,
+				Points:     point.Data.Points,
+			})
 		}
 	}
 
 	metricSamplesList := make(map[string][]*Samples)
-	for _, points := range rep.Result {
-		id := fmt.Sprintf("%s.%s", points.Label, points.InstanceId)
+	for _, point := range dataPoints {
+		id := fmt.Sprintf("%s.%s", point.MetricName, point.InstanceId)
 		if _, isExist := ms[id]; isExist {
-			samples, ql, e := repo.buildSamples(ms[id], points)
+			samples, ql, e := repo.buildSamples(ms[id], point)
 			if e != nil {
 				level.Error(repo.logger).Log(
 					"msg", e.Error(),
@@ -327,13 +351,13 @@ type RequestMonitorMetric struct {
 
 func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 	ms map[string]*Metric,
-	st, et int64,
+	period, st, et int64,
 ) map[string]interface{} {
 	requestParams := make(map[string]interface{})
 
 	requestParams["StartTime"] = time.Unix(st, 0).Format("2006-01-02T15:04:05Z")
 	requestParams["EndTime"] = time.Unix(et, 0).Format("2006-01-02T15:04:05Z")
-	requestParams["Period"] = 60
+	requestParams["Period"] = period
 	requestParams["Aggregate"] = []string{"Max"}
 
 	requestMetrics := make([]*RequestMonitorMetric, 0, len(ms))
@@ -363,44 +387,20 @@ func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 	return requestParams
 }
 
-func (repo *MetricRepositoryImpl) buildSamples(
-	m *Metric,
-	mSeries MonitorSeries,
-) (*Samples, map[string]string, error) {
-
-	ql := map[string]string{}
-
-	sid, e := GetSeriesId(m, mSeries.InstanceId)
-	if e != nil {
-		return nil, ql, fmt.Errorf("get series id fail")
-	}
-	s, ok := m.SeriesCache.Series[sid]
-	if !ok {
-		return nil, ql, fmt.Errorf("response data point not match series")
-	}
-	samples, e := NewSamples(s, mSeries)
-	if e != nil {
-		return nil, ql, fmt.Errorf("this instance may not have metric data")
-	}
-	return samples, ql, nil
-}
-
-//DescribeMonitorData
-func (repo *MetricRepositoryImpl) DescribeMonitorData(m map[string]*Metric, st int64, et int64) (map[string][]*Samples, error) {
-	ctx, cancel := context.WithCancel(repo.ctx)
-	defer cancel()
-
-	err := repo.limiter.Wait(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	requestParams := repo.buildGetMonitorRequest(m, st, et)
-
+func (repo *MetricRepositoryImpl) getMetricStatisticsBatchV2(requestParams map[string]interface{}) (*GetMetricStatisticsBatchResponseV2, error) {
 	start := time.Now()
-	rep, err := repo.describeMonitorDataRequest(&requestParams)
+	resp, err := repo.monitorClientV2.GetMetricStatisticsBatch(&requestParams)
 	if err != nil {
 		level.Error(repo.logger).Log("request start time ", requestParams["StartTime"], "duration ", time.Since(start).Seconds(), "err ", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, fmt.Errorf("get monitor data is empty")
+	}
+
+	respBytes, _ := json.Marshal(&resp)
+	var rep GetMetricStatisticsBatchResponseV2
+	if err := json.Unmarshal(respBytes, &rep); err != nil {
 		return nil, err
 	}
 
@@ -410,11 +410,81 @@ func (repo *MetricRepositoryImpl) DescribeMonitorData(m map[string]*Metric, st i
 		}
 	}
 
+	return &rep, nil
+}
+
+func (repo *MetricRepositoryImpl) getMetricStatisticsBatchV5(requestParams map[string]interface{}) (*GetMetricStatisticsBatchResponseV5, error) {
+	start := time.Now()
+	resp, err := repo.monitorClientV5.GetMetricStatisticsBatch(&requestParams)
+	if err != nil {
+		level.Error(repo.logger).Log("request start time ", requestParams["StartTime"], "duration ", time.Since(start).Seconds(), "err ", err.Error())
+		return nil, err
+	}
+	if resp == nil {
+		return nil, fmt.Errorf("get monitor data is empty")
+	}
+
+	respBytes, _ := json.Marshal(&resp)
+	var rep GetMetricStatisticsBatchResponseV5
+	if err := json.Unmarshal(respBytes, &rep); err != nil {
+		return nil, err
+	}
+
+	if len(rep.ErrorMessage) > 0 {
+		for _, v := range rep.ErrorMessage {
+			level.Debug(repo.logger).Log("msg", v)
+		}
+	}
+
+	return &rep, nil
+}
+
+func (repo *MetricRepositoryImpl) buildSamples(
+	m *Metric,
+	p *DataPoint,
+) (*Samples, map[string]string, error) {
+
+	ql := map[string]string{}
+
+	sid, e := GetSeriesId(m, p.InstanceId)
+	if e != nil {
+		return nil, ql, fmt.Errorf("get series id fail")
+	}
+	s, ok := m.SeriesCache.Series[sid]
+	if !ok {
+		return nil, ql, fmt.Errorf("response data point not match series")
+	}
+	samples, e := NewSamples(s, p)
+	if e != nil {
+		return nil, ql, fmt.Errorf("this instance may not have metric data")
+	}
+	return samples, ql, nil
+}
+
+//DescribeMonitorData
+func (repo *MetricRepositoryImpl) DescribeMonitorData(namespace string, m map[string]*Metric, period int64, st int64, et int64) (map[string][]*Samples, error) {
+	ctx, cancel := context.WithCancel(repo.ctx)
+	defer cancel()
+
+	err := repo.limiter.Wait(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	requestParams := repo.buildGetMonitorRequest(m, period, st, et)
+
+	start := time.Now()
+	points, err := repo.describeMonitorDataRequest(namespace, &requestParams)
+	if err != nil {
+		level.Error(repo.logger).Log("request start time ", requestParams["StartTime"], "duration ", time.Since(start).Seconds(), "err ", err.Error())
+		return nil, err
+	}
+
 	metricSamplesList := make(map[string][]*Samples)
-	for _, points := range rep.Result {
-		id := fmt.Sprintf("%s.%s", points.Label, points.InstanceId)
+	for _, point := range points {
+		id := fmt.Sprintf("%s.%s", point.MetricName, point.InstanceId)
 		if _, isExist := m[id]; isExist {
-			samples, ql, e := repo.buildSamples(m[id], points)
+			samples, ql, e := repo.buildSamples(m[id], point)
 			if e != nil {
 				level.Error(repo.logger).Log(
 					"msg", e.Error(),
@@ -429,20 +499,18 @@ func (repo *MetricRepositoryImpl) DescribeMonitorData(m map[string]*Metric, st i
 	return metricSamplesList, nil
 }
 
-func (repo *MetricRepositoryImpl) describeMonitorDataRequest(input *map[string]interface{}) (GetMetricStatisticsBatchResponse, error) {
-	var response GetMetricStatisticsBatchResponse
-
+func (repo *MetricRepositoryImpl) describeMonitorDataRequest(namespace string, input *map[string]interface{}) ([]*DataPoint, error) {
 	if len(repo.exporterConf.Credential.AccessMonitorMetaURL) <= 0 {
-		return response, fmt.Errorf("mock inner url is empty.")
+		return nil, fmt.Errorf("mock inner url is empty")
 	}
 
 	dataJSON, err := json.Marshal(input)
 	if err != nil {
-		return response, err
+		return nil, err
 	}
 	req, err := http.NewRequest(http.MethodPost, repo.exporterConf.Credential.AccessMonitorMetaURL, bytes.NewBuffer(dataJSON))
 	if err != nil {
-		return response, err
+		return nil, err
 	}
 
 	requestID := uuid.New().String()
@@ -464,22 +532,57 @@ func (repo *MetricRepositoryImpl) describeMonitorDataRequest(input *map[string]i
 
 	resp, err := c.Do(req)
 	if err != nil {
-		return response, err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode != http.StatusOK {
-		return response, errors.New(string(body))
+		return nil, errors.New(string(body))
 	}
 
-	if err := json.Unmarshal(body, &response); err != nil {
-		return response, fmt.Errorf("parse monitor data err, %+v", err)
+	var dataPoints []*DataPoint
+	if namespace == "KCM" {
+		var response GetMetricStatisticsBatchResponseV5
+		if err := json.Unmarshal(body, &response); err != nil {
+			return nil, fmt.Errorf("parse monitor data err, %+v", err)
+		}
+
+		for _, result := range response.GetMetricStatisticsBatchResults {
+			for _, point := range result.Points {
+				dataPoints = append(dataPoints, &DataPoint{
+					InstanceId: result.Instance,
+					MetricName: result.MetricName,
+					Points:     point.Values,
+					Dimensions: point.Dimensions,
+				})
+			}
+		}
+	} else {
+		var response GetMetricStatisticsBatchResponseV2
+		if err := json.Unmarshal(body, &response); err != nil {
+			return nil, fmt.Errorf("parse monitor data err, %+v", err)
+		}
+
+		for _, v := range response.ErrorMessage {
+			level.Debug(repo.logger).Log("msg", v)
+		}
+
+		for _, point := range response.Result {
+			dataPoints = append(dataPoints, &DataPoint{
+				InstanceId: point.InstanceId,
+				MetricName: point.Label,
+				Points:     point.Data.Points,
+			})
+		}
 	}
 
-	return response, nil
+	return dataPoints, nil
 }
 
 //NewMetricRepository
@@ -492,7 +595,7 @@ func NewMetricRepository(
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: true,
+			UseSSL: conf.Credential.UseSSL,
 		},
 	)
 
@@ -500,7 +603,7 @@ func NewMetricRepository(
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: true,
+			UseSSL: conf.Credential.UseSSL,
 		},
 	)
 
@@ -508,7 +611,15 @@ func NewMetricRepository(
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: true,
+			UseSSL: conf.Credential.UseSSL,
+		},
+	)
+
+	clientV5 := v5.SdkNew(
+		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
+		&ksc.Config{Region: &conf.Credential.Region},
+		&utils.UrlInfo{
+			UseSSL: conf.Credential.UseSSL,
 		},
 	)
 
@@ -517,6 +628,7 @@ func NewMetricRepository(
 		monitorClient:        client,
 		monitorClientV2:      clientV2,
 		monitorClientV3:      clientV3,
+		monitorClientV5:      clientV5,
 		limiter:              rate.NewLimiter(rate.Limit(conf.RateLimit), 1),
 		ctx:                  context.Background(),
 		queryMetricBatchSize: conf.MetricQueryBatchSize,

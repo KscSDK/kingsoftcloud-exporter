@@ -92,11 +92,11 @@ func (h *baseProductHandler) GetSeriesByInstances(m *metric.Metric, instances []
 		}
 
 		ql := map[string]string{
-			"namespace":    m.Meta.Namespace,
-			"region":       config.ExporterRunningRegion,
-			"instancename": i.GetInstanceName(),
-			"instanceid":   i.GetInstanceID(),
-			"instanceip":   i.GetInstanceIP(),
+			"ksyun_namespace":    m.Meta.Namespace,
+			"ksyun_region":       config.ExporterRunningRegion,
+			"ksyun_instancename": i.GetInstanceName(),
+			"ksyun_instanceid":   i.GetInstanceID(),
+			"ksyun_instanceip":   i.GetInstanceIP(),
 		}
 
 		s, err := metric.NewSeries(m, ql, i)

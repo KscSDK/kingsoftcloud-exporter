@@ -153,7 +153,7 @@ func NewInstanceBWSRepository(conf *config.KscExporterConfig, logger log.Logger)
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: true,
+			UseSSL: conf.Credential.UseSSL,
 		},
 	)
 

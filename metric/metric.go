@@ -2,6 +2,7 @@ package metric
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -40,7 +41,7 @@ type MetricSet struct {
 
 	MetricDesc *string `json:"metricDesc,omitempty"`
 
-	InstanceID *string `json:"InstanceId,omitempty"`
+	InstanceID *string `json:"instanceId,omitempty"`
 
 	//metric collection or push interval
 	Interval *string `json:"interval,omitempty"`
@@ -68,7 +69,7 @@ type Metric struct {
 }
 
 //GetLatestPromMetrics
-func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, logger log.Logger) (pms []prometheus.Metric, err error) {
+func GetLatestPromMetrics(namespace string, repo MetricRepository, metrics map[string]*Metric, period int64, logger log.Logger) (pms []prometheus.Metric, err error) {
 	// var st int64
 	now := time.Now().Unix()
 	st := now - int64(180)
@@ -76,9 +77,9 @@ func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, log
 
 	metricSamples := make(map[string][]*Samples)
 	if config.ExporterRunningMode == config.ExporterMode_Mock {
-		metricSamples, err = repo.DescribeMonitorData(metrics, st, et)
+		metricSamples, err = repo.DescribeMonitorData(namespace, metrics, period, st, et)
 	} else {
-		metricSamples, err = repo.ListBatchSamples(metrics, st, et)
+		metricSamples, err = repo.ListBatchSamples(namespace, metrics, period, st, et)
 	}
 	if err != nil {
 		return nil, err
@@ -124,14 +125,17 @@ func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, log
 				var names []string
 				var values []string
 
-				labels := m.Labels.GetValues(samples.Series.QueryLabels, samples.Series.Instance)
-
-				labels = map[string]string{
-					"namespace":    m.Meta.Namespace,
-					"region":       config.ExporterRunningRegion,
-					"instancename": samples.Series.Instance.GetInstanceName(),
-					"instanceid":   samples.Series.Instance.GetInstanceID(),
-					"instanceip":   samples.Series.Instance.GetInstanceIP(),
+				// labels := m.Labels.GetValues(samples.Series.QueryLabels, samples.Series.Instance)
+				labels := map[string]string{
+					"ksyun_namespace":    m.Meta.Namespace,
+					"ksyun_region":       config.ExporterRunningRegion,
+					"ksyun_instancename": samples.Series.Instance.GetInstanceName(),
+					"ksyun_instanceid":   samples.Series.Instance.GetInstanceID(),
+					"ksyun_instanceip":   samples.Series.Instance.GetInstanceIP(),
+				}
+				// add all dimensions from cloudmonitor into prom labels
+				for _, dim := range point.Dimensions {
+					labels[dim.Name] = dim.Value
 				}
 
 				for labelName, labelValue := range labels {
@@ -153,18 +157,25 @@ func GetLatestPromMetrics(repo MetricRepository, metrics map[string]*Metric, log
 					nil,
 				)
 
+				valueType := prometheus.GaugeValue
+				if m.Meta.m.ValueType != nil {
+					if vType, err := strconv.Atoi(*m.Meta.m.ValueType); err == nil {
+						valueType = prometheus.ValueType(vType)
+					}
+				}
+
 				var pm prometheus.Metric
 				if m.Conf.StatDelaySeconds > 0 {
 					pm = prometheus.NewMetricWithTimestamp(time.Unix(int64(point.Timestamp), 0), prometheus.MustNewConstMetric(
 						newDesc,
-						prometheus.GaugeValue,
+						valueType,
 						point.Value,
 						values...,
 					))
 				} else {
 					pm = prometheus.MustNewConstMetric(
 						newDesc,
-						prometheus.GaugeValue,
+						valueType,
 						point.Value,
 						values...,
 					)
@@ -224,14 +235,13 @@ func (m *Metric) GetLatestPromMetrics(repo MetricRepository) (pms []prometheus.M
 			var names []string
 			var values []string
 
-			labels := m.Labels.GetValues(samples.Series.QueryLabels, samples.Series.Instance)
-
-			labels = map[string]string{
-				"namespace":    m.Meta.Namespace,
-				"region":       config.ExporterRunningRegion,
-				"instancename": samples.Series.Instance.GetInstanceName(),
-				"instanceid":   samples.Series.Instance.GetInstanceID(),
-				"instanceip":   samples.Series.Instance.GetInstanceIP(),
+			// labels := m.Labels.GetValues(samples.Series.QueryLabels, samples.Series.Instance)
+			labels := map[string]string{
+				"ksyun_namespace":    m.Meta.Namespace,
+				"ksyun_region":       config.ExporterRunningRegion,
+				"ksyun_instancename": samples.Series.Instance.GetInstanceName(),
+				"ksyun_instanceid":   samples.Series.Instance.GetInstanceID(),
+				"ksyun_instanceip":   samples.Series.Instance.GetInstanceIP(),
 			}
 
 			for labelName, labelValue := range labels {
@@ -253,18 +263,25 @@ func (m *Metric) GetLatestPromMetrics(repo MetricRepository) (pms []prometheus.M
 				nil,
 			)
 
+			valueType := prometheus.GaugeValue
+			if m.Meta.m.ValueType != nil {
+				if vType, err := strconv.Atoi(*m.Meta.m.ValueType); err == nil {
+					valueType = prometheus.ValueType(vType)
+				}
+			}
+
 			var pm prometheus.Metric
 			if m.Conf.StatDelaySeconds > 0 {
 				pm = prometheus.NewMetricWithTimestamp(time.Unix(int64(point.Timestamp), 0), prometheus.MustNewConstMetric(
 					newDesc,
-					prometheus.GaugeValue,
+					valueType,
 					point.Value,
 					values...,
 				))
 			} else {
 				pm = prometheus.MustNewConstMetric(
 					newDesc,
-					prometheus.GaugeValue,
+					valueType,
 					point.Value,
 					values...,
 				)
@@ -346,11 +363,18 @@ func NewMetric(meta *Meta, conf *MetricConf) (*Metric, error) {
 			st = strings.ToLower(s)
 		}
 
-		fqName := fmt.Sprintf("%s_%s",
-			vmn,
-			st,
-		)
-		fqName = strings.ToLower(fqName)
+		var fqName string
+		if meta.Namespace == "KCM" && st == "last" {
+			fqName = vmn
+		} else {
+			fqName = fmt.Sprintf("%s_%s",
+				vmn,
+				st,
+			)
+		}
+		if meta.Namespace != "KCM" {
+			fqName = strings.ToLower(fqName)
+		}
 		statPromDesc[strings.ToLower(s)] = Desc{
 			FQName: fqName,
 			Help:   help,

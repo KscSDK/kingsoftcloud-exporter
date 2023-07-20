@@ -99,7 +99,7 @@ func NewKscIAMClient(conf *config.KscExporterConfig, logger log.Logger) (*IAMCli
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: true,
+			UseSSL: conf.Credential.UseSSL,
 		},
 	)
 

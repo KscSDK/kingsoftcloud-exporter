@@ -19,6 +19,20 @@ type Meta struct {
 	m                 *MetricSet
 }
 
+func (meta *Meta) GetPeriod(confPeriod int64) (int64, error) {
+	if meta.m.Interval == nil {
+		return 60, nil
+	}
+
+	var period int64
+	if confPeriod != 0 {
+		period = confPeriod
+	} else {
+		period = config.DefaultPeriodSeconds
+	}
+	return period, nil
+}
+
 func FilterByMetricName(metricName string) string {
 	if len(metricName) <= 0 {
 		return metricName
