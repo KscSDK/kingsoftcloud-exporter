@@ -17,6 +17,7 @@ NAT    | NAT |[指标详情](https://docs.ksyun.com/documents/26#three)
 专线网关 | DCGW|[指标详情](https://docs.ksyun.com/documents/26#seventeen)
 关系型数据库 | KRDS |[指标详情](https://docs.ksyun.com/documents/26#five)
 云数据库Redis | KCS |[指标详情](https://docs.ksyun.com/documents/26#four)
+自定义监控 | KCM |
 
 `后续会有更多的产品支持`
 
