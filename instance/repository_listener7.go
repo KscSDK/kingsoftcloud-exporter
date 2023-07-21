@@ -197,7 +197,7 @@ func NewInstanceListener7Repository(conf *config.KscExporterConfig, logger log.L
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: true,
+			UseSSL: conf.Credential.UseSSL,
 		},
 	)
 

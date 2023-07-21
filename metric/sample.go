@@ -4,8 +4,9 @@ import "strconv"
 
 // 代表一个数据点
 type Sample struct {
-	Timestamp int64
-	Value     float64
+	Timestamp  int64
+	Value      float64
+	Dimensions []Dimension
 }
 
 // 代表一个时间线的多个数据点
@@ -75,23 +76,25 @@ func SplitBySamplesBatch(l []*Samples, batch int) (steps [][]*Samples) {
 	return
 }
 
-func NewSamples(series *Series, mSeries MonitorSeries) (s *Samples, err error) {
+func NewSamples(series *Series, p *DataPoint) (s *Samples, err error) {
 	s = &Samples{
 		Series:  series,
 		Samples: []*Sample{},
 	}
 
-	for i := 0; i < len(mSeries.Data.Points); i++ {
-		value, err := strconv.ParseFloat(mSeries.Data.Points[i].Max, 64)
+	points := p.Points
+	for i := 0; i < len(points); i++ {
+		value, err := strconv.ParseFloat(points[i].Max, 64)
 		if err != nil {
 			continue
 		}
 
-		unixTimestamp := mSeries.Data.Points[i].UnixTimestamp / 1000
+		unixTimestamp := points[i].UnixTimestamp / 1000
 
 		s.Samples = append(s.Samples, &Sample{
-			Timestamp: unixTimestamp,
-			Value:     value,
+			Timestamp:  unixTimestamp,
+			Value:      value,
+			Dimensions: p.Dimensions,
 		})
 	}
 	return

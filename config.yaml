@@ -1,0 +1,27 @@
+exporter_mode: "MOCK"
+
+rate_limit: 15
+
+credential:
+  access_key: "AKLTEsT9GHOTNCQAhdOHgAmrQ"
+  secret_key: "ONxXTbI1YuRAEZPYejb7p3aASJl3QGTl2dJSMSfkJk4dopRxFR740mpXicc6BrpKQ"
+  region: "cn-shanghai-3"
+  access_account: "73401193"
+  access_instances_url: "http://localhost:8080/v4/?Action=DescribeInstances"
+  access_monitor_meta_url: "http://localhost:8080/v4/?Action=GetMetricStatisticsBatch"
+  access_metric_meta_url: "http://localhost:8080/v4/?Action=ListMetrics"
+
+# 整个产品纬度配置, 每个产品一个item
+product_conf:
+  - namespace: KCM
+    reload_interval_minutes: 60
+    period_seconds: 60
+    range_seconds: 300
+    delay_seconds: 60
+    #only_include_metrics: # 可选，只导出指标列表
+    #  - system.cpu.load
+    #  - net.if.out
+    #only_include_projects: [104139]
+    #only_include_instances:
+    #  - "7638a091-c418-4695-b615-27fc1c7c4693"
+    #  - "33a3775d-8ad1-4224-a3af-c3a93a706256"

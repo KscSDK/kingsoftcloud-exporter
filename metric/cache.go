@@ -76,12 +76,12 @@ func (c *MetricCache) ListSamples(metric *Metric, startTime int64, endTime int64
 	return c.Raw.ListSamples(metric, startTime, endTime)
 }
 
-func (c *MetricCache) ListBatchSamples(m map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error) {
-	return c.Raw.ListBatchSamples(m, startTime, endTime)
+func (c *MetricCache) ListBatchSamples(namespace string, m map[string]*Metric, period int64, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error) {
+	return c.Raw.ListBatchSamples(namespace, m, period, startTime, endTime)
 }
 
-func (c *MetricCache) DescribeMonitorData(m map[string]*Metric, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error) {
-	return c.Raw.DescribeMonitorData(m, startTime, endTime)
+func (c *MetricCache) DescribeMonitorData(namespace string, m map[string]*Metric, period int64, startTime int64, endTime int64) (metricSamples map[string][]*Samples, err error) {
+	return c.Raw.DescribeMonitorData(namespace, m, period, startTime, endTime)
 }
 
 //checkMetaNeedReload 检测是否需要reload缓存的数据

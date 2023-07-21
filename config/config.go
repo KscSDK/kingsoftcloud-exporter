@@ -56,6 +56,7 @@ var (
 		"kcs":       "KCS",
 		"dcgw":      "DCGW",
 		"ks3":       "KS3",
+		"kcm":       "KCM",
 	}
 
 	SupportStatisticsTypes = map[string]bool{
@@ -67,11 +68,13 @@ var (
 	//支持多维标签的监控项云服务产品
 	SupportMultiDimensionNamespaces = map[string]bool{
 		"KEC": true,
+		"KCM": true,
 		"EPC": true,
 	}
 
 	AllProductMetricsConfig = map[string][]KscMetricConfig{
 		"KEC":       AllKECMetricConfigs,
+		"KCM":       AllKCMMetricConfigs,
 		"EPC":       AllEPCMetricConfigs,
 		"EIP":       AllEIPMetricConfigs,
 		"NAT":       AllNATMetricConfigs,
@@ -101,6 +104,7 @@ type Credential struct {
 	Token                string `yaml:"token"`
 	ExpiredTime          int64  `yaml:"expired_time"`
 	IsInternal           bool   `yaml:"is_internal"`
+	UseSSL               bool   `yaml:"-"`
 }
 
 //MonitorMetricConf
@@ -195,6 +199,7 @@ func (c *KscExporterConfig) fillDefault() {
 	if c.MetricQueryBatchSize <= 0 || c.MetricQueryBatchSize > 100 {
 		c.MetricQueryBatchSize = DefaultQueryMetricBatchSize
 	}
+	c.Credential.UseSSL = !c.Credential.IsInternal
 
 	for i := 0; i < len(c.Products); i++ {
 		for index, metric := range c.Products[i].Metrics {
