@@ -75,12 +75,6 @@ func GetLatestPromMetrics(namespace string, repo MetricRepository, metrics map[s
 	st := now - int64(180)
 	et := now - int64(120)
 
-	// KCM is determined by the crawling time.
-	if namespace == "KCM" {
-		st = now - int64(60)
-		et = now
-	}
-
 	metricSamples := make(map[string][]*Samples)
 	if config.ExporterRunningMode == config.ExporterMode_Mock {
 		metricSamples, err = repo.DescribeMonitorData(namespace, metrics, period, st, et)
