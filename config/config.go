@@ -57,6 +57,7 @@ var (
 		"dcgw":      "DCGW",
 		"ks3":       "KS3",
 		"kcm":       "KCM",
+		"mongo":     "MONGO",
 	}
 
 	SupportStatisticsTypes = map[string]bool{
@@ -88,6 +89,7 @@ var (
 		"PGS":       AllPGSMetricConfigs,
 		"DCGW":      AllDCGWMetricConfigs,
 		"KS3":       AllKS3MetricConfigs,
+		"MONGO":     AllMongoDBMetricConfigs,
 	}
 )
 
