@@ -17,7 +17,6 @@ NAT    | NAT |[指标详情](https://docs.ksyun.com/documents/26#three)
 专线网关 | DCGW|[指标详情](https://docs.ksyun.com/documents/26#seventeen)
 关系型数据库 | KRDS |[指标详情](https://docs.ksyun.com/documents/26#five)
 云数据库Redis | KCS |[指标详情](https://docs.ksyun.com/documents/26#four)
-自定义监控 | KCM |
 
 `后续会有更多的产品支持`
 
@@ -87,25 +86,50 @@ product_conf:
 
 **特殊说明:**
 
-1. **product_conf**
+1. **credential.access_key**
+   申请方式，请参考[访问控制](https://docs.ksyun.com/documents/1376)，**特别需要注意:** 当前账号必须要有访问对应云服务产品线的权限；
+
+   可参考 [全局系统策略](https://docs.ksyun.com/documents/1398)；
+
+   示例1：**`Exporter`** 使用未授权的账号获取云服务器(KEC)监控，配置如下:
+   ```yaml
+      credential:
+        access_key: XXXX-XXXX
+        secret_key: XXXX-XXXX
+        region: cn-beijing-6
+      
+      product_conf:
+        - namespace: KEC
+   ```
+   运行 **`Exporter`** 失败，提示错误如截图所示，表示当前账户无权限访问云服务器(KEC)资源列表;
+   ![Alt text](images/invalid_authentication.png)
+   
+   此时需要登录，[访问控制台](https://uc.console.ksyun.com/pro/iam/#/permission/authorize) 给账户授权 `KECReadOnlyAccess` 策略, 如下图所示：
+   ![Alt text](images/permission.png)
+   
+   配置完成好，重新启动 **`Exporter`** ，服务即可正常运行。
+   ![Alt text](images/exporter_success.png)
+   
+2. **credential.region**
+   单个 **`Exporter`** 程序一次只能配置一个 `Region`，[可用区地址值参考](https://docs.ksyun.com/documents/6477) ;
+
+3. **product_conf**
    单个 **`Exporter`** 程序一次最多可配置4个产品线。
 
-2. **实例加载**
+4. **实例加载**
    当配置 `namespace` = `KEC` 或者 `EPC` 产品线时，需要注意由于单个实例资源产品监控项过多的而造成的请求过大，目前对这两个产品线的实例资源进行了相应的限制，单个 **`Exporter`** 一个产品最多加载前100个实例资源。
 
 
-3. **only_include_projects**  
-   导出指定项目制下的关联的产品资源列表，可以通过登录[资源管理控制台](https://uc.console.ksyun.com/pro/resourcemanager/#/directory/resource/summary) 操作项目制资源，具体操作可以参考[项目管理文档](<https://docs.ksyun.com/documents/2347>);
+5. **only_include_projects**  
+  导出指定项目制下的关联的产品资源列表，可以通过登录[资源管理控制台](https://uc.console.ksyun.com/pro/resourcemanager/#/directory/resource/summary) 操作项目制资源，具体操作可以参考[项目管理文档](<https://docs.ksyun.com/documents/2347>);
    
+
    当一个产品下配置了 `only_include_instances`，那么 `only_include_projects` 参数则失效，**`Exporter`** 会按照指定的实例维度进行查询;
-   
+      
    当配置了以下几个产品线时，需要注意：
       - KRDS: `only_include_projects` 只支持配置一个目制ID，不支持同时配置多个项目制ID
       - LISTENER:  <font color="red">该参数不生效</font>
       - LISTENER7: <font color="red">该参数不生效</font>
-
-4. **region**  
-   配置 `Region` 可选值参考 [地域可选值](https://docs.ksyun.com/documents/6477)
 
 
 ### 3. 启动 Exporter
@@ -113,6 +137,7 @@ product_conf:
 ```bash
 > ksc_exporter --config.file "exporter.yml"
 ```
+
 
 访问 [http://127.0.0.1:9123/metrics](http://127.0.0.1:9123/metrics) 查看所有导出的指标
 

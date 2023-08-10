@@ -317,11 +317,17 @@ func (repo *MetricRepositoryImpl) getMetricStatisticsBatch(
 		}
 
 		for _, point := range resp.Result {
-			dataPoints = append(dataPoints, &DataPoint{
+			dataPoint := &DataPoint{
 				InstanceId: point.InstanceId,
 				MetricName: point.Label,
 				Points:     point.Data.Points,
-			})
+			}
+
+			if namespace == "MONGO" {
+				dataPoint.InstanceId = dataPoint.InstanceId[4:]
+			}
+
+			dataPoints = append(dataPoints, dataPoint)
 		}
 	}
 
@@ -377,6 +383,11 @@ func (repo *MetricRepositoryImpl) buildGetMonitorRequest(
 
 		if *v.Meta.m.Namespace == "KCS" {
 			requestParams["Namespace"] = "KCS2"
+		}
+
+		if *v.Meta.m.Namespace == "MONGO" {
+			requestParams["Namespace"] = "MONDB"
+			requestMetric.InstanceID = fmt.Sprintf("user%+v", requestMetric.InstanceID)
 		}
 
 		requestMetrics = append(requestMetrics, requestMetric)
@@ -482,7 +493,14 @@ func (repo *MetricRepositoryImpl) DescribeMonitorData(namespace string, m map[st
 
 	metricSamplesList := make(map[string][]*Samples)
 	for _, point := range points {
-		id := fmt.Sprintf("%s.%s", point.MetricName, point.InstanceId)
+
+		instanceId := point.InstanceId
+
+		if namespace == "MONGO" && len(instanceId) > 36 {
+			instanceId = instanceId[len(instanceId)-36:]
+		}
+
+		id := fmt.Sprintf("%s.%s", point.MetricName, instanceId)
 		if _, isExist := m[id]; isExist {
 			samples, ql, e := repo.buildSamples(m[id], point)
 			if e != nil {

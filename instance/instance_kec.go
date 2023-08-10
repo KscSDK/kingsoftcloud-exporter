@@ -10,7 +10,7 @@ type InstancesKECMeta struct {
 	PrivateIpAddress string `json:"PrivateIpAddress"`
 }
 
-//InstanceEIP
+//InstanceKEC
 type InstanceKEC struct {
 	InstanceBase
 	meta *InstancesKECMeta
