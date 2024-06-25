@@ -105,20 +105,22 @@ func (c *MetricCache) checkMetaNeedReload(namespace, instanceId string) (err err
 	if err != nil {
 		return err
 	}
-	np, ok := c.metaCache[key]
-	if !ok {
-		np = map[string]*Meta{}
-		c.metaCache[key] = np
+
+	c.metaLock.Lock()
+	defer c.metaLock.Unlock()
+
+	if _, ok := c.metaCache[key]; !ok {
+		c.metaCache[key] = map[string]*Meta{}
 	}
 
 	for _, meta := range metas {
 		id := fmt.Sprintf("%s.%s", meta.MetricName, instanceId)
-		np[id] = meta
+		c.metaCache[key][id] = meta
 	}
 
 	c.metaLastReloadTime[key] = currentTime
 
-	level.Debug(c.logger).Log("msg", "Reload metric meta cache", "namespace", namespace, "num", len(np))
+	level.Debug(c.logger).Log("msg", "Reload metric meta cache", "namespace", namespace, "num", len(c.metaCache[key]))
 	return
 }
 

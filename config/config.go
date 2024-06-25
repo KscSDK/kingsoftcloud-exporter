@@ -95,18 +95,20 @@ var (
 
 //Credential
 type Credential struct {
-	AccessKey            string `yaml:"access_key"`
-	SecretKey            string `yaml:"secret_key"`
-	Role                 string `yaml:"role"`
-	AccessAccount        string `yaml:"access_account"`
-	AccessInstancesURL   string `yaml:"access_instances_url"`
-	AccessMonitorMetaURL string `yaml:"access_monitor_meta_url"`
-	AccessMetricMetaURL  string `yaml:"access_metric_meta_url"`
-	Region               string `yaml:"region"`
-	Token                string `yaml:"token"`
-	ExpiredTime          int64  `yaml:"expired_time"`
-	IsInternal           bool   `yaml:"is_internal"`
-	UseSSL               bool   `yaml:"-"`
+	AccessKey                   string `yaml:"access_key"`
+	SecretKey                   string `yaml:"secret_key"`
+	Role                        string `yaml:"role"`
+	AccessAccount               string `yaml:"access_account"`
+	AccessInstancesURL          string `yaml:"access_instances_url"`
+	AccessMonitorMetaURL        string `yaml:"access_monitor_meta_url"`
+	AccessMetricMetaURL         string `yaml:"access_metric_meta_url"`
+	Region                      string `yaml:"region"`
+	Token                       string `yaml:"token"`
+	ExpiredTime                 int64  `yaml:"expired_time"`
+	UseInternal                 bool   `yaml:"use_internal"`
+	UseSSL                      bool   `yaml:"use_ssl"`
+	CustomerDomain              string `yaml:"customer_domain"`
+	CustomerDomainIgnoreService bool   `yaml:"customer_domain_ignore_service"`
 }
 
 //MonitorMetricConf
@@ -201,7 +203,8 @@ func (c *KscExporterConfig) fillDefault() {
 	if c.MetricQueryBatchSize <= 0 || c.MetricQueryBatchSize > 100 {
 		c.MetricQueryBatchSize = DefaultQueryMetricBatchSize
 	}
-	c.Credential.UseSSL = !c.Credential.IsInternal
+
+	c.Credential.UseSSL = !c.Credential.UseSSL
 
 	for i := 0; i < len(c.Products); i++ {
 		for index, metric := range c.Products[i].Metrics {

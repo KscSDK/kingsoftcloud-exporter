@@ -110,17 +110,23 @@ product_conf:
    配置完成好，重新启动 **`Exporter`** ，服务即可正常运行。
    ![Alt text](images/exporter_success.png)
    
+
 2. **credential.region**
    单个 **`Exporter`** 程序一次只能配置一个 `Region`，[可用区地址值参考](https://docs.ksyun.com/documents/6477) ;
 
-3. **product_conf**
+
+3. **credential.use_internal** 设置为 `true` 后，程序调用内网域名 `internal.api.ksyun.com` 获取相应数据;
+   
+
+4. **product_conf**
    单个 **`Exporter`** 程序一次最多可配置4个产品线。
 
-4. **实例加载**
+
+5. **实例加载**
    当配置 `namespace` = `KEC` 或者 `EPC` 产品线时，需要注意由于单个实例资源产品监控项过多的而造成的请求过大，目前对这两个产品线的实例资源进行了相应的限制，单个 **`Exporter`** 一个产品最多加载前100个实例资源。
 
 
-5. **only_include_projects**  
+6. **only_include_projects**  
   导出指定项目制下的关联的产品资源列表，可以通过登录[资源管理控制台](https://uc.console.ksyun.com/pro/resourcemanager/#/directory/resource/summary) 操作项目制资源，具体操作可以参考[项目管理文档](<https://docs.ksyun.com/documents/2347>);
    
 

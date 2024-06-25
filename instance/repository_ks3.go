@@ -141,10 +141,14 @@ func NewInstanceKS3Repository(conf *config.KscExporterConfig, logger log.Logger)
 
 	cre := credentials.NewStaticCredentials(conf.Credential.AccessKey, conf.Credential.SecretKey, "")
 
+	endpoint := e.PublicURL
+	if conf.Credential.UseInternal {
+		endpoint = e.PrivateURL
+	}
 	svc := s3.New(&aws.Config{
 		Region:      e.Region,
 		Credentials: cre,
-		Endpoint:    e.PublicURL,
+		Endpoint:    endpoint,
 		DisableSSL:  true,
 	})
 

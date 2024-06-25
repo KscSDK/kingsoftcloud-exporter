@@ -189,7 +189,10 @@ func NewInstanceKECRepository(conf *config.KscExporterConfig, logger log.Logger)
 		ksc.NewClient(conf.Credential.AccessKey, conf.Credential.SecretKey),
 		&ksc.Config{Region: &conf.Credential.Region},
 		&utils.UrlInfo{
-			UseSSL: conf.Credential.UseSSL,
+			UseSSL:                      conf.Credential.UseSSL,
+			UseInternal:                 conf.Credential.UseInternal,
+			CustomerDomain:              conf.Credential.CustomerDomain,
+			CustomerDomainIgnoreService: conf.Credential.CustomerDomainIgnoreService,
 		},
 	)
 
